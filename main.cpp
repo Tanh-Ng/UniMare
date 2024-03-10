@@ -3,13 +3,15 @@
 bool init();
 bool loadMedia();
 void Game();
-
+void handleGameEvent();
+void handleGameInput();
+void Exit();
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
-SDL_Event e;
+SDL_Event event;
 bool initedLevel=false;
 bool quit=false;
 std::stack<StateStruct> g_StateStack;
@@ -126,6 +128,7 @@ void Game()
 	while (initedLevel && !quit)
 	{
 		//Clear screen
+		handleGameEvent();
 		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
 		SDL_RenderClear(gRenderer);
 
@@ -139,5 +142,36 @@ void Game()
 		}
 		//Update screen
 		SDL_RenderPresent(gRenderer);
+	}
+		if (quit)
+	{
+		while (!g_StateStack.empty())
+		{
+			g_StateStack.pop();
+		}
+	}
+}
+void close(){
+		gGroundTexture.free();
+		SDL_DestroyRenderer(gRenderer);
+		SDL_DestroyWindow(gWindow);
+		gWindow = NULL;
+		gRenderer = NULL;
+		IMG_Quit();
+		SDL_Quit();
+		g_StateStack.swap(emptyStack);
+}
+void Exit()
+{
+	close();
+}
+void handleGameEvent(){
+	Uint32 windowID = SDL_GetWindowID(gWindow);
+	while(SDL_PollEvent(&event)){
+		switch(event.type){
+			case SDL_QUIT:
+				quit=true;
+				break;
+		}
 	}
 }
