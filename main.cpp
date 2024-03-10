@@ -1,144 +1,143 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <iostream>
-#include <string>
-const int SCREEN_WIDTH=1200;
-const int SCREEN_HEIGHT=600;
+#include "Include/Global.h"
+#include "Include/Graphics.h"
 bool init();
 bool loadMedia();
-void close();
-SDL_Texture* loadTexture(std::string path);
+void Game();
+
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
-SDL_Texture* gBackground=NULL;
+LTexture gGroundTexture;
+SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event e;
-int main(int argc,char* argv[]){
-    if(!init()){
-        printf("Can't init");
-    }
-    else {
-        if(!loadMedia()){
-            printf("Can't load media");
-        }
-        else{
-			bool quit = false;
-			//While application is running
-			while( !quit )
+bool initedLevel=false;
+bool quit=false;
+std::stack<StateStruct> g_StateStack;
+std::stack<StateStruct> emptyStack; //for clearing stack
+int main(int argc, char* argv[])
+{
+	srand((unsigned)time(0)); //random seed
+
+	//Start up SDL and create window
+	if (!init())
+	{
+		printf("Failed to initialize!\n");
+	}
+	else
+	{
+		//Load media
+		if (!loadMedia())
+		{
+			printf("Failed to load media!\n");
+		}
+		else
+		{
+			// Our game loop is just a while loop that breaks when our state stack is empty. //
+			while (!g_StateStack.empty())
 			{
-				//Handle events on queue
-				while( SDL_PollEvent( &e ) != 0 )
-				{
-					//User requests quit
-					if( e.type == SDL_QUIT )
-					{
-						quit = true;
-					}
-				}
-				//Clear screen
-				SDL_RenderClear( gRenderer );
-				//Render texture to screen
-				SDL_RenderCopy( gRenderer, gBackground, NULL, NULL );
-				//Update screen
-				SDL_RenderPresent( gRenderer );
-            }
-        }
-    }
-    close();
-    return 0;
+				g_StateStack.top().StatePointer();
+			}
+		}
+
+		return 0;
+	}
+	return 0;
 }
  bool init()
 {
+	//Initialization flag
 	bool success = true;
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+
+	//Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
-		printf( "SDL could not initialize!" );
+		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
 		success = false;
 	}
 	else
 	{
 		//Set texture filtering to linear
-		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
-			printf( "Warning: Linear texture filtering not enabled!" );
+			printf("Warning: Linear texture filtering not enabled!");
 		}
-		gWindow = SDL_CreateWindow( "UniMare", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( gWindow == NULL )
+
+		//Create window
+		gWindow = SDL_CreateWindow("UniMare", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN); //SDL_WINDOW_RESIZABLE
+		if (gWindow == NULL)
 		{
-			printf( "Window could not be created!" );
+			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
 			success = false;
 		}
 		else
 		{
-			//Create renderer for window
-			gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED );
-			if( gRenderer == NULL )
+			//Create vsynced renderer for window
+			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			if (gRenderer == NULL)
 			{
-				printf( "Renderer could not be created! ");
+				printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
 				success = false;
 			}
 			else
 			{
 				//Initialize renderer color
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
 				//Initialize PNG loading
 				int imgFlags = IMG_INIT_PNG;
-				if( !( IMG_Init( imgFlags ) & imgFlags ) )
+				if (!(IMG_Init(imgFlags) & imgFlags))
 				{
-					printf( "SDL_image could not initialize!" );
+					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 					success = false;
 				}
 			}
 		}
 	}
+	//set base scaling
+	SDL_RenderSetLogicalSize(gRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+	StateStruct state;
+	//add menu 
+	state.StatePointer = Game;
+	g_StateStack.push(state);
 	return success;
 }
 bool loadMedia(){
 	bool success = true;
-	//Load PNG texture
-	gBackground = loadTexture( "IMGfile/ground.png" );
-	if( gBackground == NULL ){
-		printf( "Failed to load background image!\n" );
+		//Load static texture
+	if (!gGroundTexture.loadFromFile("IMGfile/ground.png"))
+	{
+		printf("Failed to load ground texture!\n");
 		success = false;
 	}
 	return success;
 }
-SDL_Texture* loadTexture( std::string path )
+void Game()
 {
-	//The final texture
-	SDL_Texture* newTexture = NULL;
-	//Load image at specified path
-	SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
-	if( loadedSurface == NULL ){
-		printf( "Unable to load image %s!\n", path.c_str() );
+
+	if (!initedLevel)
+	{
+		//init level
+		//initLevel();
+		initedLevel = true;
 	}
-	else{
-		//Create texture from surface pixels
-        newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
-		if( newTexture == NULL )
+
+	//While application is running
+	while (initedLevel && !quit)
+	{
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_RenderClear(gRenderer);
+
+		//Render ground
+		for (int y = 0; y < LEVEL_SIZE; y++)
 		{
-			printf( "Unable to create texture from %s! \n", path.c_str() );
+			for (int x = 0; x < LEVEL_SIZE; x++)
+			{
+				gGroundTexture.render(camera, x * GROUND_TILE_SIZE, y * GROUND_TILE_SIZE, GROUND_TILE_SIZE, GROUND_TILE_SIZE);
+			}
 		}
-
-		//Get rid of old loaded surface
-		SDL_FreeSurface( loadedSurface );
+		//Update screen
+		SDL_RenderPresent(gRenderer);
 	}
-	return newTexture;
-}
-void close()
-{
-	//Free loaded image
-	SDL_DestroyTexture( gBackground );
-	gBackground = NULL;
-
-	//Destroy window	
-	SDL_DestroyRenderer( gRenderer );
-	SDL_DestroyWindow( gWindow );
-	gWindow = NULL;
-	gRenderer = NULL;
-	//Quit SDL subsystems
-	IMG_Quit();
-	SDL_Quit();
 }
