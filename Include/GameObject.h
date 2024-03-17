@@ -8,7 +8,7 @@ struct gameObject{
     //object's center position
     float px,py;
     //game object render offset (top left corner)
-	int rx.ry;
+	int rx,ry;
     int type;
     void init(float x,float y,int s,int t=-1)
     void setPosition(float x, float y);

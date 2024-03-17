@@ -1,17 +1,17 @@
 #pragma once
-#include "Global.h"
-#include "Graphics.h"
+#include "GameObject.h"
 enum class pState{
     IDLE,WALK,DEAD
 };
-struct player{
-    int size;   
-    //player position
-    float px,py;
-    //render offset
-    int rx,ry;
+struct player: gameObject{
+    pState currentState;
+	pState previousState;
+    LTexture* currentTexture;
+	SDL_Rect* currentClip;
+	int currentFrame;
+	int currentTotalFrame;  
+
     void initPlayer();
-    void setPosition(float x,float y);
-    void render(LTexture target);
+    void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
 }
