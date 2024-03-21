@@ -4,6 +4,8 @@ enum class playerState{
     IDLE,WALK,DEAD
 };
 struct player: public gameObject{
+    int vx,vy;
+    int speed;
     playerState currentState;
 	playerState previousState;
     LTexture* currentTexture;

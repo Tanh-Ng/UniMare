@@ -7,6 +7,8 @@ LTexture gGroundTexture;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event event;
+//input handle
+const Uint8* keys;
 bool initedLevel=false;
 bool quit=false;
 std::stack<StateStruct> g_StateStack;
@@ -175,8 +177,12 @@ void Game()
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
-		myPlayer.currentState = playerState::IDLE;	
+		myPlayer.currentState = playerState::IDLE;
+		myPlayer.vx=0;
+		myPlayer.vy=0;	
+		myPlayer.speed=PLAYER_SPEED;
 		handleGameEvent();
+		handleGameInput();
 		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
 		SDL_RenderClear(gRenderer);
 
@@ -226,6 +232,57 @@ void handleGameEvent(){
 		}
 	}
 }
+void handleGameInput(){
+	keys = SDL_GetKeyboardState(NULL);
+	if (keys[SDL_SCANCODE_W])
+		if (myPlayer.py - myPlayer.size < 0)
+		{
+			myPlayer.vy = 0;
+		}
+		else
+		{
+			myPlayer.vy = -1;
+			myPlayer.currentState = playerState::WALK;
+		}
+		if (keys[SDL_SCANCODE_S])
+		if (myPlayer.py + myPlayer.size > LEVEL_HEIGHT)
+		{
+			myPlayer.vy = 0;
+		}
+		else
+		{
+			myPlayer.vy = 1;
+			myPlayer.currentState = playerState::WALK;
+		}
+		if (keys[SDL_SCANCODE_A])
+		if (myPlayer.px - myPlayer.size < 0)
+		{
+			myPlayer.vx = 0;
+		}
+		else
+		{
+			myPlayer.vx = -1;
+			myPlayer.currentState = playerState::WALK;
+		}
+		if (keys[SDL_SCANCODE_D])
+		if (myPlayer.px + myPlayer.size > LEVEL_WIDTH)
+		{
+			myPlayer.vx = 0;
+		}
+		else
+		{
+			myPlayer.vx = 1;
+			myPlayer.currentState = playerState::WALK;
+		}
+		if ((keys[SDL_SCANCODE_W] && keys[SDL_SCANCODE_D]) || (keys[SDL_SCANCODE_W] && keys[SDL_SCANCODE_A])||
+		(keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_D]) || (keys[SDL_SCANCODE_S] && keys[SDL_SCANCODE_A]))
+			myPlayer.speed *= 0.7;
+		if ((keys[SDL_SCANCODE_W] && keys[SDL_SCANCODE_S]) || (keys[SDL_SCANCODE_A] && keys[SDL_SCANCODE_D])){
+			myPlayer.speed = 0;
+			myPlayer.currentState = playerState::IDLE;
+		}
+
+}
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
 {
@@ -260,12 +317,15 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
+	float dirX = myPlayer.vx * myPlayer.speed * 0.03;
+	float dirY = myPlayer.vy * myPlayer.speed * 0.03;
+	myPlayer.px += dirX;
+	myPlayer.py += dirY;
 	setPlayerAnimation();
 	myPlayer.updateRenderPosition();
 	myPlayer.render(camera);
 }
 void setPlayerAnimation(){
-	myPlayer.currentState = playerState::DEAD;
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
 	}
 void updateAnimation(){
