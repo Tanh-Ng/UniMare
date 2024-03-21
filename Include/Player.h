@@ -1,17 +1,17 @@
 #pragma once
 #include "GameObject.h"
-enum class pState{
+enum class playerState{
     IDLE,WALK,DEAD
 };
-struct player: gameObject{
-    pState currentState;
-	pState previousState;
+struct player: public gameObject{
+    playerState currentState;
+	playerState previousState;
     LTexture* currentTexture;
 	SDL_Rect* currentClip;
 	int currentFrame;
-	int currentTotalFrame;  
-
+	int currentTotalFrame;
+    player();  
     void initPlayer();
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
-}
+};

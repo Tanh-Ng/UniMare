@@ -28,7 +28,7 @@
 //render window
 extern SDL_Window* gWindow;
 extern SDL_Renderer* gRenderer;
-//screen size
+//screen size	
 static int SCREEN_WIDTH = 1280;
 static int SCREEN_HEIGHT = 720;
 const int V_BORDER = SCREEN_WIDTH / 50;
@@ -38,6 +38,7 @@ const int GROUND_TILE_SIZE = 512;
 const int LEVEL_SIZE = 25;
 const int LEVEL_WIDTH = GROUND_TILE_SIZE * LEVEL_SIZE;
 const int LEVEL_HEIGHT = GROUND_TILE_SIZE * LEVEL_SIZE;
+const int PLAYER_SIZE = 100;
 int GetRandomInt(int min_value, int max_value, int step);
 float GetRandomFloat(float min_value, float max_value, float step);
 int map(int x, int in_min, int in_max, int out_min, int out_max);

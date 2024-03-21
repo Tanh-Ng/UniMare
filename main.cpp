@@ -1,11 +1,6 @@
 #include "Include/Global.h"
 #include "Include/Graphics.h"
-bool init();
-bool loadMedia();
-void Game();
-void handleGameEvent();
-void handleGameInput();
-void Exit();
+#include "Include/Player.h"
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
@@ -16,6 +11,24 @@ bool initedLevel=false;
 bool quit=false;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
+//player animation
+player myPlayer;
+const int PLAYER_IDLE_ANIMATION_FRAMES=17;
+std::map<playerState, LTexture> gPlayerTexture;
+std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
+bool init();
+bool loadMedia();
+void Game();
+void setCamera(SDL_Rect& camera, gameObject target);
+void setPlayerAnimation();
+void updatePlayer();
+void updateAnimation();
+void handleGameEvent();
+void handleGameInput();
+void Exit();
+//load player sprites
+void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
+	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame);
 int main(int argc, char* argv[])
 {
 	srand((unsigned)time(0)); //random seed
@@ -112,15 +125,26 @@ bool loadMedia(){
 		printf("Failed to load ground texture!\n");
 		success = false;
 	}
+	if (!gPlayerTexture[playerState::IDLE].loadFromFile("IMGfile/idle.png"))
+	{
+		printf("Failed to load player idle texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(playerState::IDLE, gPlayerTexture, gPlayerClips, PLAYER_IDLE_ANIMATION_FRAMES);
+	}
+
 	return success;
 }
 void Game()
 {
-
+	SDL_ShowCursor(SDL_ENABLE);
 	if (!initedLevel)
 	{
 		//init level
 		//initLevel();
+		myPlayer.initPlayer();
 		initedLevel = true;
 	}
 
@@ -128,6 +152,11 @@ void Game()
 	while (initedLevel && !quit)
 	{
 		//Clear screen
+		myPlayer.previousState = myPlayer.currentState;
+		setCamera(camera, myPlayer);
+
+		//Set the player back to idle mode
+		myPlayer.currentState = playerState::IDLE;	
 		handleGameEvent();
 		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
 		SDL_RenderClear(gRenderer);
@@ -140,7 +169,10 @@ void Game()
 				gGroundTexture.render(camera, x * GROUND_TILE_SIZE, y * GROUND_TILE_SIZE, GROUND_TILE_SIZE, GROUND_TILE_SIZE);
 			}
 		}
+		updatePlayer();
+		updateAnimation();
 		//Update screen
+		
 		SDL_RenderPresent(gRenderer);
 	}
 		if (quit)
@@ -173,5 +205,55 @@ void handleGameEvent(){
 				quit=true;
 				break;
 		}
+	}
+}
+void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
+	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
+{
+	int w = spritesheet[state].getWidth() / totalFrame;
+	int h = spritesheet[state].getHeight();
+	for (int i = 0; i < totalFrame; i++)
+	{
+		spritesheetClip[state].push_back({ i * w, 0, w , h });
+	}
+}
+void setCamera(SDL_Rect& camera, gameObject target) {
+	//Center the camera over the target
+	camera.x = int(target.px - SCREEN_WIDTH / 2);
+	camera.y = int(target.py - SCREEN_HEIGHT / 2);
+
+	//Keep the camera in bounds.
+	if (camera.x < 0)
+	{
+		camera.x = 0;
+	}
+	if (camera.y < 0)
+	{
+		camera.y = 0;
+	}
+	if (camera.x > LEVEL_WIDTH - camera.w)
+	{
+		camera.x = LEVEL_WIDTH - camera.w;
+	}
+	if (camera.y > LEVEL_HEIGHT - camera.h)
+	{
+		camera.y = LEVEL_HEIGHT - camera.h;
+	}
+}
+void updatePlayer(){
+	setPlayerAnimation();
+	myPlayer.updateRenderPosition();
+	myPlayer.render(camera);
+}
+void setPlayerAnimation(){
+	myPlayer.currentState = playerState::IDLE;
+	myPlayer.currentTotalFrame = PLAYER_IDLE_ANIMATION_FRAMES;
+	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
+	}
+void updateAnimation(){
+	myPlayer.currentFrame++;
+	if (myPlayer.currentFrame > myPlayer.currentTotalFrame - 1)
+	{
+		myPlayer.currentFrame = 0;
 	}
 }

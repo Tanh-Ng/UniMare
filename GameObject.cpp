@@ -1,6 +1,6 @@
 #include "Include/GameObject.h"
 
-void GameObject::init(float x,float y,int s,int t){
+void gameObject::init(float x,float y,int s,int t){
     size=s;
     setPosition(x, y);
 	setRenderPosition(x, y);
