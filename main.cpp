@@ -13,7 +13,7 @@ std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
 player myPlayer;
-const int PLAYER_IDLE_ANIMATION_FRAMES=17;
+const int PLAYER_ANIMATION_FRAMES=24;
 std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
 bool init();
@@ -132,8 +132,27 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(playerState::IDLE, gPlayerTexture, gPlayerClips, PLAYER_IDLE_ANIMATION_FRAMES);
+		loadSpritesheet(playerState::IDLE, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
 	}
+	if (!gPlayerTexture[playerState::WALK].loadFromFile("IMGfile/walk.png"))
+	{
+		printf("Failed to load player walk texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(playerState::WALK, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
+	}
+	if (!gPlayerTexture[playerState::DEAD].loadFromFile("IMGfile/dead.png"))
+	{
+		printf("Failed to load player dead texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(playerState::DEAD, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
+	}
+
 
 	return success;
 }
@@ -246,13 +265,12 @@ void updatePlayer(){
 	myPlayer.render(camera);
 }
 void setPlayerAnimation(){
-	myPlayer.currentState = playerState::IDLE;
-	myPlayer.currentTotalFrame = PLAYER_IDLE_ANIMATION_FRAMES;
+	myPlayer.currentState = playerState::DEAD;
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
 	}
 void updateAnimation(){
 	myPlayer.currentFrame++;
-	if (myPlayer.currentFrame > myPlayer.currentTotalFrame - 1)
+	if (myPlayer.currentFrame > PLAYER_ANIMATION_FRAMES - 1)
 	{
 		myPlayer.currentFrame = 0;
 	}

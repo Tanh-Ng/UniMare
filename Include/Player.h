@@ -9,7 +9,6 @@ struct player: public gameObject{
     LTexture* currentTexture;
 	SDL_Rect* currentClip;
 	int currentFrame;
-	int currentTotalFrame;
     player();  
     void initPlayer();
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);

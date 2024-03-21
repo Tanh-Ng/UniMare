@@ -3,15 +3,13 @@ player::player()
 {
 	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, PLAYER_SIZE, -1);
 	currentFrame = 0;
-	currentTotalFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
 }
 void player::initPlayer()
 {
-	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SCREEN_HEIGHT / 5, -1);
+	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SCREEN_HEIGHT/5 , -1);
 	currentFrame = 0;
-	currentTotalFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
 }
