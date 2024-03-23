@@ -173,7 +173,9 @@ void Game()
 	while (initedLevel && !quit)
 	{
 		//Clear screen
+		
 		myPlayer.previousState = myPlayer.currentState;
+		myPlayer.previousDirection = myPlayer.currentDirection;
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
@@ -281,6 +283,11 @@ void handleGameInput(){
 			myPlayer.speed = 0;
 			myPlayer.currentState = playerState::IDLE;
 		}
+		if(myPlayer.vx == -1)
+			myPlayer.currentDirection = SDL_FLIP_HORIZONTAL;
+		else if(myPlayer.vx == 1)
+			myPlayer.currentDirection = SDL_FLIP_NONE;
+		else myPlayer.currentDirection = myPlayer.previousDirection;
 
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
