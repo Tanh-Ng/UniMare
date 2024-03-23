@@ -1,6 +1,7 @@
 #include "Include/Global.h"
 #include "Include/Graphics.h"
 #include "Include/Player.h"
+#include "Include/Enemy.h"
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
@@ -18,6 +19,10 @@ player myPlayer;
 const int PLAYER_ANIMATION_FRAMES=24;
 std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
+//enemy animation
+enemy myEnemy;
+std::map<enemyState, LTexture> gEnemyTexture[4];
+std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
 bool init();
 bool loadMedia();
 void Game();
@@ -31,6 +36,8 @@ void Exit();
 //load player sprites
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame);
+void loadSpritesheet(enum enemyState state, std::map<enemyState, LTexture>& spritesheet,
+	std::map<enemyState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame);
 int main(int argc, char* argv[])
 {
 	srand((unsigned)time(0)); //random seed
@@ -154,8 +161,42 @@ bool loadMedia(){
 	{
 		loadSpritesheet(playerState::DEAD, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
 	}
-
-
+	if (!gEnemyTexture[0][enemyState::WALK].loadFromFile("IMGfile/enemy1walk.png"))
+	{
+		printf("Failed to load enemy 1 walk texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[0], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+	}
+	if (!gEnemyTexture[1][enemyState::WALK].loadFromFile("IMGfile/enemy2walk.png"))
+	{
+		printf("Failed to load enemy 2 walk texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[1], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+	}
+	if (!gEnemyTexture[2][enemyState::WALK].loadFromFile("IMGfile/enemy3walk.png"))
+	{
+		printf("Failed to load enemy 3 walk texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[2], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+	}
+	if (!gEnemyTexture[3][enemyState::WALK].loadFromFile("IMGfile/enemy4walk.png"))
+	{
+		printf("Failed to load enemy 4 walk texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[3], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+	}
 	return success;
 }
 void Game()
@@ -284,14 +325,24 @@ void handleGameInput(){
 			myPlayer.currentState = playerState::IDLE;
 		}
 		if(myPlayer.vx == -1)
-			myPlayer.currentDirection = SDL_FLIP_HORIZONTAL;
+			myPlayer.currentDirection = LEFT;
 		else if(myPlayer.vx == 1)
-			myPlayer.currentDirection = SDL_FLIP_NONE;
+			myPlayer.currentDirection = RIGHT;
 		else myPlayer.currentDirection = myPlayer.previousDirection;
 
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
+{
+	int w = spritesheet[state].getWidth() / totalFrame;
+	int h = spritesheet[state].getHeight();
+	for (int i = 0; i < totalFrame; i++)
+	{
+		spritesheetClip[state].push_back({ i * w, 0, w , h });
+	}
+}
+void loadSpritesheet(enum enemyState state, std::map<enemyState, LTexture>& spritesheet,
+	std::map<enemyState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
 {
 	int w = spritesheet[state].getWidth() / totalFrame;
 	int h = spritesheet[state].getHeight();

@@ -14,6 +14,7 @@ struct gameObject{
     void setPosition(float x, float y);
 	void setRenderPosition(float x, float y);
     void updateRenderPosition();
+    float calDistance(gameObject target);
     
 };
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList);

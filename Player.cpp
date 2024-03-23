@@ -7,8 +7,8 @@ player::player()
 	currentFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
-	previousDirection = SDL_FLIP_NONE;
-	currentDirection = SDL_FLIP_NONE;
+	previousDirection = RIGHT;
+	currentDirection = RIGHT;
 }
 void player::initPlayer()
 {
@@ -18,8 +18,8 @@ void player::initPlayer()
 	currentFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
-	previousDirection = SDL_FLIP_NONE;
-	currentDirection = SDL_FLIP_NONE;
+	previousDirection = RIGHT;
+	currentDirection = RIGHT;
 }
 void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {

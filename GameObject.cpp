@@ -17,6 +17,9 @@ void gameObject::updateRenderPosition() {
 	rx = int(px - size / 2);
 	ry = int(py - size / 2);
 }
+float gameObject::calDistance(gameObject target) {
+	return sqrt(pow(target.px - px, 2) + pow(target.py - py, 2));
+}
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList)
 {
 	if (vectorList.size() > 0)

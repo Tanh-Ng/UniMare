@@ -6,14 +6,6 @@ int GetRandomInt(int min_value, int max_value, int step)
 	int random_value = (rand() % ((++max_value - min_value) / step)) * step + min_value;
 	return random_value;
 }
-
-float GetRandomFloat(float min_value, float max_value, float step)
-{
-	max_value += step;
-	float random_value = (std::fmod(rand(), ((++max_value - min_value) / step)) * step + min_value);
-	return random_value;
-}
-
 int map(int x, int in_min, int in_max, int out_min, int out_max)
 {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
