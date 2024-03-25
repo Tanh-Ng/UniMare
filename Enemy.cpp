@@ -2,8 +2,8 @@
 enemy::enemy()
 {
 	speed=0;
-    size = SCREEN_HEIGHT / 7;
-	type = 0;
+    size = PLAYER_SIZE+100;
+	
 }
 void enemy::initEnemy()
 {
@@ -11,7 +11,7 @@ void enemy::initEnemy()
 	int randomY = GetRandomInt(size, LEVEL_HEIGHT - size, 1);
 	setPosition(randomX, randomY);
 	setRenderPosition(px, py);
-	int type = GetRandomInt(0,2,1);
+	type = GetRandomInt(0,2,1);
 	currentFrame = 0;
 	currentState = enemyState::WALK;
 	previousState = enemyState::WALK;

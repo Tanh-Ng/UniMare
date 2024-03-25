@@ -95,26 +95,12 @@ SDL_Texture* LTexture::getSDLTexture()
 {
 	return mTexture;
 }
-void LTexture::renderchar(int x, int y, int w, int h, SDL_Rect* clip)
-{
-	//Set rendering space and render to screen
-	SDL_Rect renderQuad = { x, y, w, h };
-
-	//Render to screen
-	SDL_RenderCopy(gRenderer, mTexture, clip, &renderQuad);
-	}
-
 void LTexture::render(int x, int y, int w, int h, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
 {
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { x, y, w, h };
 
 	//Set clip rendering dimensions
-	if (clip != NULL)
-	{
-		renderQuad.w = clip->w * 0.5;
-		renderQuad.h = clip->h * 0.5;
-	}
 
 	//Render to screen
 	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
@@ -126,11 +112,6 @@ void LTexture::render(SDL_Rect& camera, int x, int y, int w, int h, SDL_Rect* cl
 	SDL_Rect renderQuad = { x - camera.x, y - camera.y, w, h };
 
 	//Set clip rendering dimensions
-	if (clip != NULL)
-	{
-		renderQuad.w = clip->w;// *0.5;
-		renderQuad.h = clip->h;// *0.5;
-	}
 	//Render to screen
 	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }

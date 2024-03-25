@@ -12,23 +12,27 @@ SDL_Event event;
 const Uint8* keys;
 bool initedLevel=false;
 bool quit=false;
+bool allowSpawning=false;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
 player myPlayer;
-const int PLAYER_ANIMATION_FRAMES=24;
+const int ANIMATION_FRAMES=24;
 std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
 //enemy animation
 enemy myEnemy;
 std::map<enemyState, LTexture> gEnemyTexture[4];
 std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
+std::vector<enemy> enemies;
 bool init();
 bool loadMedia();
 void Game();
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
 void updatePlayer();
+void spawnEnemy();
+void updateEnemy();
 void updateAnimation();
 void handleGameEvent();
 void handleGameInput();
@@ -141,7 +145,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(playerState::IDLE, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(playerState::IDLE, gPlayerTexture, gPlayerClips, ANIMATION_FRAMES);
 	}
 	if (!gPlayerTexture[playerState::WALK].loadFromFile("IMGfile/walk.png"))
 	{
@@ -150,7 +154,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(playerState::WALK, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(playerState::WALK, gPlayerTexture, gPlayerClips, ANIMATION_FRAMES);
 	}
 	if (!gPlayerTexture[playerState::DEAD].loadFromFile("IMGfile/dead.png"))
 	{
@@ -159,7 +163,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(playerState::DEAD, gPlayerTexture, gPlayerClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(playerState::DEAD, gPlayerTexture, gPlayerClips, ANIMATION_FRAMES);
 	}
 	if (!gEnemyTexture[0][enemyState::WALK].loadFromFile("IMGfile/enemy1walk.png"))
 	{
@@ -168,7 +172,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(enemyState::WALK, gEnemyTexture[0], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[0], gEnemyClips, ANIMATION_FRAMES);
 	}
 	if (!gEnemyTexture[1][enemyState::WALK].loadFromFile("IMGfile/enemy2walk.png"))
 	{
@@ -177,7 +181,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(enemyState::WALK, gEnemyTexture[1], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[1], gEnemyClips, ANIMATION_FRAMES);
 	}
 	if (!gEnemyTexture[2][enemyState::WALK].loadFromFile("IMGfile/enemy3walk.png"))
 	{
@@ -186,7 +190,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(enemyState::WALK, gEnemyTexture[2], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[2], gEnemyClips, ANIMATION_FRAMES);
 	}
 	if (!gEnemyTexture[3][enemyState::WALK].loadFromFile("IMGfile/enemy4walk.png"))
 	{
@@ -195,7 +199,7 @@ bool loadMedia(){
 	}
 	else
 	{
-		loadSpritesheet(enemyState::WALK, gEnemyTexture[3], gEnemyClips, PLAYER_ANIMATION_FRAMES);
+		loadSpritesheet(enemyState::WALK, gEnemyTexture[3], gEnemyClips, ANIMATION_FRAMES);
 	}
 	return success;
 }
@@ -207,6 +211,7 @@ void Game()
 		//init level
 		//initLevel();
 		myPlayer.initPlayer();
+		allowSpawning = true;
 		initedLevel = true;
 	}
 
@@ -238,6 +243,7 @@ void Game()
 			}
 		}
 		updatePlayer();
+		updateEnemy();
 		updateAnimation();
 		//Update screen
 		
@@ -386,10 +392,34 @@ void updatePlayer(){
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
 	}
+void updateEnemy(){
+	if(allowSpawning)
+		spawnEnemy();
+	for(int i = 0 ; i < enemies.size();i++){
+		int tmp=enemies[i].type;
+		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
+		enemies[i].render(camera);
+	}
+}
+void spawnEnemy(){
+	while (enemies.size() <  MAX_CURRENT_EMEMY )
+		{
+			myEnemy.initEnemy();
+			enemies.push_back(myEnemy);
+		}
+		allowSpawning = false;
+}
 void updateAnimation(){
 	myPlayer.currentFrame++;
-	if (myPlayer.currentFrame > PLAYER_ANIMATION_FRAMES - 1)
+	if (myPlayer.currentFrame > ANIMATION_FRAMES - 1)
 	{
 		myPlayer.currentFrame = 0;
+	}
+	for(int i = 0 ; i < enemies.size() ; i++){
+		enemies[i].currentFrame++;
+		if (enemies[i].currentFrame > ANIMATION_FRAMES - 1)
+	{
+		enemies[i].currentFrame = 0;
+	}
 	}
 }

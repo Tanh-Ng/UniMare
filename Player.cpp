@@ -12,7 +12,7 @@ player::player()
 }
 void player::initPlayer()
 {
-	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SCREEN_HEIGHT/5 , -1);
+	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, PLAYER_SIZE,-1);
 	vx=0;vy=0;
 	speed=PLAYER_SPEED;
 	currentFrame = 0;
