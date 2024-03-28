@@ -5,7 +5,8 @@ enum class playerState{
 };
 struct player: public gameObject{
     int vx,vy;
-    int speed;
+    int health;
+    float speed;
     SDL_RendererFlip previousDirection;
 	SDL_RendererFlip currentDirection;
     playerState currentState;

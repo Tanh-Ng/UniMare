@@ -1,7 +1,6 @@
 #include "Include/Enemy.h"
 enemy::enemy()
 {
-	speed=6;
     size = PLAYER_SIZE+100;
 	
 }
@@ -11,7 +10,23 @@ void enemy::initEnemy()
 	int randomY = GetRandomInt(size, LEVEL_HEIGHT - size, 1);
 	setPosition(randomX, randomY);
 	setRenderPosition(px, py);
-	type = GetRandomInt(0,2,1);
+	type = GetRandomInt(0,3,1);
+	if(type==0){
+		speed = GetRandomFloat(1,3,0.05);
+		health= 100;
+	}
+	else if(type==1){
+		speed = GetRandomFloat(3,4,0.05);
+		health = 50;
+	}
+	else if(type==2){
+		speed = GetRandomFloat(3,4,0.05);
+		health = 40;
+	}
+	else {
+		speed = GetRandomFloat(4,6,0.05);
+		health = 10;
+	}
 	currentFrame = 0;
 	currentState = enemyState::WALK;
 	previousState = enemyState::WALK;

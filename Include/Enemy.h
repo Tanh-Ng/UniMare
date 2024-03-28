@@ -7,7 +7,7 @@ enum class enemyState{
     ATTACK,WALK,DEAD
 };
 struct enemy: public gameObject{
-    int speed;
+    float speed;
     int health;
 	SDL_RendererFlip direction;
     enemyState currentState;

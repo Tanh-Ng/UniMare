@@ -400,6 +400,7 @@ void updateEnemy(){
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer);
 		enemies[i].render(camera);
+		
 	}
 }
 void spawnEnemy(){

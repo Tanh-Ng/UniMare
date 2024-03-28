@@ -1,9 +1,15 @@
 #include "Include/Global.h"
 
 int GetRandomInt(int min_value, int max_value, int step)
+{	
+	max_value+=step;
+	int random_value = (rand() % ((max_value - min_value) / step)) * step + min_value;
+	return random_value;
+}
+float GetRandomFloat(float min_value, float max_value, float step)
 {
-	max_value += step;
-	int random_value = (rand() % ((++max_value - min_value) / step)) * step + min_value;
+	max_value+=step;
+	float random_value = (std::fmod(rand(), ((max_value - min_value) / step)) * step + min_value);
 	return random_value;
 }
 int map(int x, int in_min, int in_max, int out_min, int out_max)

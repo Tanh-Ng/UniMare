@@ -1,8 +1,7 @@
 #pragma once
 #include "Global.h"
-class LTexture
+struct LTexture
 {
-public:
 	//Initializes variables
 	LTexture();
 
@@ -29,8 +28,6 @@ public:
 	//Gets image dimensions
 	int getWidth();
 	int getHeight();
-
-private:
 	//The actual hardware texture
 	SDL_Texture* mTexture;
 
