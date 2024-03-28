@@ -1,7 +1,7 @@
 #include "Include/Enemy.h"
 enemy::enemy()
 {
-	speed=0;
+	speed=6;
     size = PLAYER_SIZE+100;
 	
 }
@@ -15,8 +15,7 @@ void enemy::initEnemy()
 	currentFrame = 0;
 	currentState = enemyState::WALK;
 	previousState = enemyState::WALK;
-	previousDirection = RIGHT;
-	currentDirection = RIGHT;
+	direction = RIGHT;
 }
 void enemy::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {
@@ -26,5 +25,18 @@ void enemy::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 void enemy::render(SDL_Rect& camera)
 {	
 	if(currentTexture!=NULL)
-	currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,currentDirection);
+		currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,direction);
+}
+void enemy::move(gameObject player){
+	if(player.px < px)
+		direction = LEFT;
+	else direction = RIGHT;
+	calRotation(player.px, player.py);
+	float dirX = 0;
+	float dirY = 0;
+	dirX = -cos(rotation * PI / 180.0);
+	dirY = -sin(rotation * PI / 180.0);
+	px +=  dirX * speed;
+	py += dirY * speed;
+	setRenderPosition(px, py);
 }

@@ -20,6 +20,11 @@ void gameObject::updateRenderPosition() {
 float gameObject::calDistance(gameObject target) {
 	return sqrt(pow(target.px - px, 2) + pow(target.py - py, 2));
 }
+void gameObject::calRotation(int x , int y){
+	int deltaX = px - x;
+	int deltaY = py - y;
+	rotation = (atan2(deltaY, deltaX) * 180.0) / PI;
+}
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList)
 {
 	if (vectorList.size() > 0)

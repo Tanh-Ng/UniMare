@@ -39,11 +39,11 @@ const int LEVEL_SIZE = 15;
 const int LEVEL_WIDTH = GROUND_TILE_SIZE * LEVEL_SIZE;
 const int LEVEL_HEIGHT = GROUND_TILE_SIZE * LEVEL_SIZE;
 const int PLAYER_SIZE = SCREEN_HEIGHT/5;
-const int PLAYER_SPEED = 300;
+const int PLAYER_SPEED = 10;
 const int ENEMY_TYPES = 4;
 const int MAX_CURRENT_EMEMY = 100;
-const int MAX_ENEMY=30;
-
+const int MAX_ENEMY = 30;
+const double PI = 3.14159265358979323846;
 const SDL_RendererFlip RIGHT = SDL_FLIP_NONE;
 const SDL_RendererFlip LEFT = SDL_FLIP_HORIZONTAL;
 int GetRandomInt(int min_value, int max_value, int step);

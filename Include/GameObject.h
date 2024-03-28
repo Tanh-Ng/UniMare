@@ -15,7 +15,7 @@ struct gameObject{
 	void setRenderPosition(float x, float y);
     void updateRenderPosition();
     float calDistance(gameObject target);
-    
+    void calRotation(int x , int y);
 };
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList);
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList, std::vector<SDL_Rect> clips);

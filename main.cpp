@@ -381,8 +381,8 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
-	float dirX = myPlayer.vx * myPlayer.speed * 0.03;
-	float dirY = myPlayer.vy * myPlayer.speed * 0.03;
+	float dirX = myPlayer.vx * myPlayer.speed;
+	float dirY = myPlayer.vy * myPlayer.speed;
 	myPlayer.px += dirX;
 	myPlayer.py += dirY;
 	setPlayerAnimation();
@@ -398,6 +398,7 @@ void updateEnemy(){
 	for(int i = 0 ; i < enemies.size();i++){
 		int tmp=enemies[i].type;
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
+		enemies[i].move(myPlayer);
 		enemies[i].render(camera);
 	}
 }

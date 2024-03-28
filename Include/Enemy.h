@@ -9,8 +9,7 @@ enum class enemyState{
 struct enemy: public gameObject{
     int speed;
     int health;
-    SDL_RendererFlip previousDirection;
-	SDL_RendererFlip currentDirection;
+	SDL_RendererFlip direction;
     enemyState currentState;
     enemyState previousState;
     LTexture* currentTexture;
@@ -20,4 +19,5 @@ struct enemy: public gameObject{
     void initEnemy();
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
+    void move(gameObject player);
 };
