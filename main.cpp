@@ -18,7 +18,7 @@ std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
 player myPlayer;
-const int ANIMATION_FRAMES=24;
+const int ANIMATION_FRAMES=18;
 std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
 //enemy animation
@@ -264,8 +264,10 @@ void Game()
 		updatePlayer();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
-		
 		updateAnimation();
+		for(gameObject &i:rocks){
+			i.drawHitbox(camera,gRenderer);
+		}
 		
 		//Update screen
 		
@@ -291,23 +293,24 @@ void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorLi
 		while (!ok)
 		{
 			randomSize = GetRandomInt(minSize, maxSize, 1);
-			randomX = GetRandomInt(randomSize, LEVEL_WIDTH - randomSize, 1);
-			randomY = GetRandomInt(randomSize, LEVEL_HEIGHT - randomSize, 1);
+			randomX = GetRandomInt(randomSize,LEVEL_WIDTH-randomSize, 1);
+			randomY = GetRandomInt(randomSize,LEVEL_HEIGHT-randomSize, 1);
 			if (calDistance(randomX, randomY, myPlayer.px, myPlayer.py) > randomSize + myPlayer.size)
 			{
 				ok = true;
 			}
 		}
-		source.init(randomX, randomY, randomSize, -1);
+		source.init(randomX, randomY, randomSize, 0);
 		if (maxType != -1)
 		{
-			source.type = GetRandomInt(0, maxType, 1);
+			source.type = GetRandomInt(0, maxType-1, 1);
 		}
 		vectorList.push_back(source);
 	}
 }
 void close(){
 		gGroundTexture.free();
+		gRockTexture.free();
 		SDL_DestroyRenderer(gRenderer);
 		SDL_DestroyWindow(gWindow);
 		gWindow = NULL;
@@ -443,9 +446,21 @@ void updatePlayer(){
 	float dirY = myPlayer.vy * myPlayer.speed;
 	myPlayer.px += dirX;
 	myPlayer.py += dirY;
+	bool collided =false;
+	for(gameObject i:rocks){
+		if(myPlayer.checkCollision(i,0)){
+		collided=true;
+		break;
+		}
+	}
+	if(collided){
+	myPlayer.px -= dirX;
+	myPlayer.py -= dirY;
+	}
 	setPlayerAnimation();
 	myPlayer.updateRenderPosition();
 	myPlayer.render(camera);
+	//myPlayer.drawHitbox(camera,gRenderer);
 }
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
@@ -458,6 +473,7 @@ void updateEnemy(){
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer);
 		enemies[i].render(camera);
+		//enemies[i].drawHitbox(camera,gRenderer);
 		
 	}
 }

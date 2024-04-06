@@ -16,6 +16,8 @@ struct gameObject{
     void updateRenderPosition();
     float calDistance(gameObject target);
     void calRotation(int x , int y);
+    bool checkCollision(gameObject target, float padding);
+    void drawHitbox(SDL_Rect camera,SDL_Renderer* renderer);
 };
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList);
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList, std::vector<SDL_Rect> clips);

@@ -4,6 +4,7 @@ void gameObject::init(float x,float y,int s,int t){
     size=s;
     setPosition(x, y);
 	setRenderPosition(x, y);
+	type=t;
 }
 void gameObject::setPosition(float x, float y) {
 	px = x;
@@ -24,6 +25,17 @@ void gameObject::calRotation(int x , int y){
 	int deltaX = px - x;
 	int deltaY = py - y;
 	rotation = (atan2(deltaY, deltaX) * 180.0) / PI;
+}
+bool gameObject::checkCollision(gameObject target, float padding) {
+	if (calDistance(target) < float(target.size / 2) + padding) {
+		return true;
+	}
+	return false;
+}
+void gameObject::drawHitbox(SDL_Rect camera,SDL_Renderer* renderer){
+	SDL_Rect rect = { rx - camera.x, ry - camera.y, size, size };
+	SDL_SetRenderDrawColor(renderer,255,0,0,255);
+	SDL_RenderDrawRect(renderer,&rect);
 }
 void renderGameObject(SDL_Rect camera, LTexture& sourceTexture, std::vector<gameObject>& vectorList)
 {

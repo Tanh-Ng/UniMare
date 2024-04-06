@@ -1,7 +1,7 @@
 #include "Include/Enemy.h"
 enemy::enemy()
 {
-    size = PLAYER_SIZE+100;
+    size = PLAYER_SIZE;
 	
 }
 void enemy::initEnemy()
