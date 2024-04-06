@@ -5,6 +5,7 @@
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
+LTexture gRockTexture;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event event;
@@ -25,9 +26,15 @@ enemy myEnemy;
 std::map<enemyState, LTexture> gEnemyTexture[4];
 std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
 std::vector<enemy> enemies;
+//rocks 
+const int ROCKS_CLIP=3;
+gameObject rock;
+std::vector <SDL_Rect> gRockClips;
+std::vector<gameObject> rocks;
 bool init();
 bool loadMedia();
 void Game();
+void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType);
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
 void updatePlayer();
@@ -42,6 +49,7 @@ void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& sp
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame);
 void loadSpritesheet(enum enemyState state, std::map<enemyState, LTexture>& spritesheet,
 	std::map<enemyState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame);
+void loadClips(LTexture& spritesheet, std::vector<SDL_Rect>& spritesheetClip, int totalClip);
 int main(int argc, char* argv[])
 {
 	srand((unsigned)time(0)); //random seed
@@ -133,7 +141,7 @@ int main(int argc, char* argv[])
 bool loadMedia(){
 	bool success = true;
 		//Load static texture
-	if (!gGroundTexture.loadFromFile("IMGfile/ground.png"))
+	if (!gGroundTexture.loadFromFile("IMGfile/ground2.png"))
 	{
 		printf("Failed to load ground texture!\n");
 		success = false;
@@ -201,6 +209,15 @@ bool loadMedia(){
 	{
 		loadSpritesheet(enemyState::WALK, gEnemyTexture[3], gEnemyClips, ANIMATION_FRAMES);
 	}
+	if (!gRockTexture.loadFromFile("IMGfile/rocks.png"))
+	{
+		printf("Failed to load rock texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadClips(gRockTexture, gRockClips, ROCKS_CLIP);
+	}
 	return success;
 }
 void Game()
@@ -211,6 +228,7 @@ void Game()
 		//init level
 		//initLevel();
 		myPlayer.initPlayer();
+		createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
 		allowSpawning = true;
 		initedLevel = true;
 	}
@@ -235,6 +253,7 @@ void Game()
 		SDL_RenderClear(gRenderer);
 
 		//Render ground
+		gGroundTexture.setColor(107,107,107,192);
 		for (int y = 0; y < LEVEL_SIZE; y++)
 		{
 			for (int x = 0; x < LEVEL_SIZE; x++)
@@ -243,8 +262,11 @@ void Game()
 			}
 		}
 		updatePlayer();
+		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
+		
 		updateAnimation();
+		
 		//Update screen
 		
 		SDL_RenderPresent(gRenderer);
@@ -255,6 +277,33 @@ void Game()
 		{
 			g_StateStack.pop();
 		}
+	}
+}
+void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType)
+{
+	for (int i = 0; i < total; i++)
+	{
+		bool ok = false;
+		int randomSize = 0;
+		int randomX = 0;
+		int randomY = 0;
+
+		while (!ok)
+		{
+			randomSize = GetRandomInt(minSize, maxSize, 1);
+			randomX = GetRandomInt(randomSize, LEVEL_WIDTH - randomSize, 1);
+			randomY = GetRandomInt(randomSize, LEVEL_HEIGHT - randomSize, 1);
+			if (calDistance(randomX, randomY, myPlayer.px, myPlayer.py) > randomSize + myPlayer.size)
+			{
+				ok = true;
+			}
+		}
+		source.init(randomX, randomY, randomSize, -1);
+		if (maxType != -1)
+		{
+			source.type = GetRandomInt(0, maxType, 1);
+		}
+		vectorList.push_back(source);
 	}
 }
 void close(){
@@ -355,6 +404,15 @@ void loadSpritesheet(enum enemyState state, std::map<enemyState, LTexture>& spri
 	for (int i = 0; i < totalFrame; i++)
 	{
 		spritesheetClip[state].push_back({ i * w, 0, w , h });
+	}
+}
+void loadClips(LTexture& spritesheet, std::vector<SDL_Rect>& spritesheetClip, int totalClip)
+{
+	int w = spritesheet.getWidth() / totalClip;
+	int h = spritesheet.getHeight();
+	for (int i = 0; i < totalClip; i++)
+	{
+		spritesheetClip.push_back({ i * w, 0, w , h });
 	}
 }
 void setCamera(SDL_Rect& camera, gameObject target) {
