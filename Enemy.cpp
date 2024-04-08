@@ -42,7 +42,7 @@ void enemy::render(SDL_Rect& camera)
 	if(currentTexture!=NULL)
 		currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,direction);
 }
-void enemy::move(gameObject player){
+void enemy::move(gameObject player,std::vector<gameObject> rocks){
 	if(player.px < px)
 		direction = LEFT;
 	else direction = RIGHT;
@@ -53,5 +53,16 @@ void enemy::move(gameObject player){
 	dirY = -sin(rotation * PI / 180.0);
 	px +=  dirX * speed;
 	py += dirY * speed;
+	bool collided =false;
+	for(gameObject i:rocks){
+		if(checkCollision(i,0)&&type!=2){
+			collided=true;
+			break;
+			}
+		}
+		if(collided){
+			px -= dirX*1,2*speed;
+			py -= dirY*speed;
+		}
 	setRenderPosition(px, py);
 }

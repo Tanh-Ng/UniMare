@@ -19,5 +19,5 @@ struct enemy: public gameObject{
     void initEnemy();
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
-    void move(gameObject player);
+    void move(gameObject player,std::vector<gameObject> rocks);
 };
