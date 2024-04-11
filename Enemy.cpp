@@ -61,7 +61,7 @@ void enemy::move(gameObject player,std::vector<gameObject> rocks){
 			}
 		}
 		if(collided){
-			px -= dirX*1,2*speed;
+			px -= dirX*1.1*speed;
 			py -= dirY*speed;
 		}
 	setRenderPosition(px, py);

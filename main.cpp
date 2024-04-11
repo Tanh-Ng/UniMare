@@ -2,6 +2,7 @@
 #include "Include/Graphics.h"
 #include "Include/Player.h"
 #include "Include/Enemy.h"
+#include "Include/Weapon.h"
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
@@ -11,6 +12,9 @@ SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 SDL_Event event;
 //input handle
 const Uint8* keys;
+int mouseX;
+int mouseY;
+Uint32 mouses;
 bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
@@ -31,6 +35,10 @@ const int ROCKS_CLIP=3;
 gameObject rock;
 std::vector <SDL_Rect> gRockClips;
 std::vector<gameObject> rocks;
+//weapons
+weapon currentWeapon;
+LTexture SaberTexture;
+std::vector <SDL_Rect> SaberClips;
 bool init();
 bool loadMedia();
 void Game();
@@ -38,6 +46,7 @@ void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorLi
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
 void updatePlayer();
+void updateWeapon();
 void spawnEnemy();
 void updateEnemy();
 void updateAnimation();
@@ -218,15 +227,24 @@ bool loadMedia(){
 	{
 		loadClips(gRockTexture, gRockClips, ROCKS_CLIP);
 	}
+	if (!SaberTexture.loadFromFile("IMGfile/lightsaber.png"))
+	{
+		printf("Failed to load rock texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadClips(SaberTexture, SaberClips, SABER_CLIP);
+	}
 	return success;
 }
 void Game()
 {
-	SDL_ShowCursor(SDL_ENABLE);
 	if (!initedLevel)
 	{
 		//init level
 		//initLevel();
+		SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 		myPlayer.initPlayer();
 		createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
 		allowSpawning = true;
@@ -237,7 +255,6 @@ void Game()
 	while (initedLevel && !quit)
 	{
 		//Clear screen
-		
 		myPlayer.previousState = myPlayer.currentState;
 		myPlayer.previousDirection = myPlayer.currentDirection;
 		setCamera(camera, myPlayer);
@@ -262,13 +279,10 @@ void Game()
 			}
 		}
 		updatePlayer();
+		updateWeapon();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
 		updateAnimation();
-		for(gameObject &i:rocks){
-			i.drawHitbox(camera,gRenderer);
-		}
-		
 		//Update screen
 		
 		SDL_RenderPresent(gRenderer);
@@ -335,6 +349,7 @@ void handleGameEvent(){
 }
 void handleGameInput(){
 	keys = SDL_GetKeyboardState(NULL);
+	mouses = SDL_GetMouseState(&mouseX, &mouseY);
 	if (keys[SDL_SCANCODE_W])
 		if (myPlayer.py - myPlayer.size < 0)
 		{
@@ -381,6 +396,9 @@ void handleGameInput(){
 		if ((keys[SDL_SCANCODE_W] && keys[SDL_SCANCODE_S]) || (keys[SDL_SCANCODE_A] && keys[SDL_SCANCODE_D])){
 			myPlayer.speed = 0;
 			myPlayer.currentState = playerState::IDLE;
+		}
+		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)){
+			currentWeapon.currentState= weaponState::ATTACK;
 		}
 		if(myPlayer.vx == -1)
 			myPlayer.currentDirection = LEFT;
@@ -462,9 +480,19 @@ void updatePlayer(){
 	myPlayer.render(camera);
 	//myPlayer.drawHitbox(camera,gRenderer);
 }
+void updateWeapon(){
+	currentWeapon.px = myPlayer.px+currentWeapon.size/2.5;
+	currentWeapon.py = myPlayer.py+currentWeapon.size/4.5;
+	currentWeapon.direction=myPlayer.currentDirection;
+	currentWeapon.calRotation(camera, mouseX, mouseY);
+	currentWeapon.setAnimation(SaberTexture,SaberClips[currentWeapon.currentFrame]);
+	currentWeapon.updateRenderPosition();
+	currentWeapon.render(camera);
+	currentWeapon.drawHitbox(camera,gRenderer);
+}
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
-	}
+}
 void updateEnemy(){
 	if(allowSpawning)
 		spawnEnemy();
@@ -473,7 +501,7 @@ void updateEnemy(){
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer,rocks);
 		enemies[i].render(camera);
-		enemies[i].drawHitbox(camera,gRenderer);
+		//enemies[i].drawHitbox(camera,gRenderer);
 		
 	}
 }
@@ -497,5 +525,13 @@ void updateAnimation(){
 	{
 		enemies[i].currentFrame = 0;
 	}
+	}
+	if(currentWeapon.currentState== weaponState::ATTACK){
+		currentWeapon.currentFrame++;
+		if (currentWeapon.currentFrame > SABER_CLIP - 1)
+		{
+			currentWeapon.currentFrame = 0;
+			currentWeapon.currentState= weaponState::NONE;
+		}
 	}
 }

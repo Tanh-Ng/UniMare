@@ -3,10 +3,10 @@
 #include "GameObject.h"
 #include "Player.h"
 extern player myPlayer;
-enum class enemyState{
+enum struct enemyState{
     ATTACK,WALK,DEAD
 };
-struct enemy: public gameObject{
+struct enemy: gameObject{
     float speed;
     int health;
 	SDL_RendererFlip direction;

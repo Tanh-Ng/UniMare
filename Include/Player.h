@@ -1,9 +1,9 @@
 #pragma once
 #include "GameObject.h"
-enum class playerState{
+enum struct playerState{
     IDLE,WALK,DEAD
 };
-struct player: public gameObject{
+struct player: gameObject{
     int vx,vy;
     int health;
     float speed;
