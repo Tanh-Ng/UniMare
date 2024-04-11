@@ -7,8 +7,7 @@ player::player()
 	currentFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
-	previousDirection = RIGHT;
-	currentDirection = RIGHT;
+	direction = RIGHT;
 }
 void player::initPlayer()
 {
@@ -19,8 +18,7 @@ void player::initPlayer()
 	currentFrame = 0;
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
-	previousDirection = RIGHT;
-	currentDirection = RIGHT;
+	direction = RIGHT;
 }
 void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {
@@ -30,5 +28,5 @@ void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 void player::render(SDL_Rect& camera)
 {	
 	if(currentTexture!=NULL)
-	currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,currentDirection);
+	currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,direction);
 }

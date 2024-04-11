@@ -7,8 +7,7 @@ struct player: gameObject{
     int vx,vy;
     int health;
     float speed;
-    SDL_RendererFlip previousDirection;
-	SDL_RendererFlip currentDirection;
+    SDL_RendererFlip direction;
     playerState currentState;
 	playerState previousState;
     LTexture* currentTexture;

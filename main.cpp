@@ -27,7 +27,7 @@ std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
 //enemy animation
 enemy myEnemy;
-std::map<enemyState, LTexture> gEnemyTexture[4];
+std::vector<std::map<enemyState, LTexture>> gEnemyTexture(4);
 std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
 std::vector<enemy> enemies;
 //rocks 
@@ -38,7 +38,10 @@ std::vector<gameObject> rocks;
 //weapons
 weapon currentWeapon;
 LTexture SaberTexture;
-std::vector <SDL_Rect> SaberClips;
+LTexture PistolTexture;
+LTexture ShotgunTexture;
+LTexture RifleTexture;
+std::vector<std::vector <SDL_Rect>> WeaponClip(4);
 bool init();
 bool loadMedia();
 void Game();
@@ -229,12 +232,39 @@ bool loadMedia(){
 	}
 	if (!SaberTexture.loadFromFile("IMGfile/lightsaber.png"))
 	{
-		printf("Failed to load rock texture!\n");
+		printf("Failed to load saber texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(SaberTexture, SaberClips, SABER_CLIP);
+		loadClips(SaberTexture, WeaponClip[0], WEAPON_CLIP);
+	}
+	if (!ShotgunTexture.loadFromFile("IMGfile/shotgun.png"))
+	{
+		printf("Failed to load shotgun texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadClips(ShotgunTexture, WeaponClip[1], WEAPON_CLIP);
+	}
+	if (!PistolTexture.loadFromFile("IMGfile/pistol.png"))
+	{
+		printf("Failed to load pistol texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadClips(PistolTexture, WeaponClip[2], WEAPON_CLIP);
+	}
+	if (!RifleTexture.loadFromFile("IMGfile/rifle.png"))
+	{
+		printf("Failed to load rifle texture!\n");
+		success = false;
+	}
+	else
+	{
+		loadClips(RifleTexture, WeaponClip[3], WEAPON_CLIP);
 	}
 	return success;
 }
@@ -256,7 +286,6 @@ void Game()
 	{
 		//Clear screen
 		myPlayer.previousState = myPlayer.currentState;
-		myPlayer.previousDirection = myPlayer.currentDirection;
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
@@ -278,8 +307,8 @@ void Game()
 				gGroundTexture.render(camera, x * GROUND_TILE_SIZE, y * GROUND_TILE_SIZE, GROUND_TILE_SIZE, GROUND_TILE_SIZE);
 			}
 		}
-		updatePlayer();
 		updateWeapon();
+		updatePlayer();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
 		updateAnimation();
@@ -400,12 +429,6 @@ void handleGameInput(){
 		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)){
 			currentWeapon.currentState= weaponState::ATTACK;
 		}
-		if(myPlayer.vx == -1)
-			myPlayer.currentDirection = LEFT;
-		else if(myPlayer.vx == 1)
-			myPlayer.currentDirection = RIGHT;
-		else myPlayer.currentDirection = myPlayer.previousDirection;
-
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
@@ -460,6 +483,7 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
+	myPlayer.direction = currentWeapon.direction;
 	float dirX = myPlayer.vx * myPlayer.speed;
 	float dirY = myPlayer.vy * myPlayer.speed;
 	myPlayer.px += dirX;
@@ -483,9 +507,8 @@ void updatePlayer(){
 void updateWeapon(){
 	currentWeapon.px = myPlayer.px+currentWeapon.size/2.5;
 	currentWeapon.py = myPlayer.py+currentWeapon.size/4.5;
-	currentWeapon.direction=myPlayer.currentDirection;
 	currentWeapon.calRotation(camera, mouseX, mouseY);
-	currentWeapon.setAnimation(SaberTexture,SaberClips[currentWeapon.currentFrame]);
+	currentWeapon.setAnimation(RifleTexture,WeaponClip[3][currentWeapon.currentFrame]);
 	currentWeapon.updateRenderPosition();
 	currentWeapon.render(camera);
 	currentWeapon.drawHitbox(camera,gRenderer);
@@ -528,7 +551,7 @@ void updateAnimation(){
 	}
 	if(currentWeapon.currentState== weaponState::ATTACK){
 		currentWeapon.currentFrame++;
-		if (currentWeapon.currentFrame > SABER_CLIP - 1)
+		if (currentWeapon.currentFrame > WEAPON_CLIP - 1)
 		{
 			currentWeapon.currentFrame = 0;
 			currentWeapon.currentState= weaponState::NONE;

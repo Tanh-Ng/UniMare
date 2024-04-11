@@ -6,6 +6,7 @@ enum struct weaponState{
 struct weapon : gameObject{
     weapon();
     float damage;
+    double ratio = 1.783;
     double rotation;
     SDL_Point centerPoint;
     SDL_RendererFlip direction;
@@ -14,6 +15,7 @@ struct weapon : gameObject{
 	int currentFrame;
     LTexture* Texture;
     SDL_Rect* currentClip;
+    void initWeapon();
     void setAnimation(LTexture& targetTexture,SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
     void calRotation(SDL_Rect& camera, int x, int y);
