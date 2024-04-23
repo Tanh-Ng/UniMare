@@ -6,6 +6,7 @@ enum struct playerState{
 struct player: gameObject{
     int vx,vy;
     int health;
+    int currentWeapon;
     float speed;
     SDL_RendererFlip direction;
     playerState currentState;

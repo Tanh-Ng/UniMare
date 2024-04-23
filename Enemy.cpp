@@ -13,19 +13,19 @@ void enemy::initEnemy()
 	type = GetRandomInt(0,3,1);
 	if(type==0){
 		speed = GetRandomFloat(1,3,0.05);
-		health= 100;
+		health= 20;
 	}
 	else if(type==1){
 		speed = GetRandomFloat(3,4,0.05);
-		health = 50;
+		health = 20;
 	}
 	else if(type==2){
 		speed = GetRandomFloat(3,4,0.05);
-		health = 40;
+		health = 20;
 	}
 	else {
 		speed = GetRandomFloat(4,6,0.05);
-		health = 10;
+		health = 20;
 	}
 	currentFrame = 0;
 	currentState = enemyState::WALK;
@@ -65,4 +65,7 @@ void enemy::move(gameObject player,std::vector<gameObject> rocks){
 			py -= dirY*speed;
 		}
 	setRenderPosition(px, py);
+}
+void enemy::hurt(int damage){
+	health-=damage;
 }

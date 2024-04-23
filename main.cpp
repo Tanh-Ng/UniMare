@@ -18,6 +18,7 @@ Uint32 mouses;
 bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
+bool attacking=true;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
@@ -36,11 +37,8 @@ gameObject rock;
 std::vector <SDL_Rect> gRockClips;
 std::vector<gameObject> rocks;
 //weapons
-weapon currentWeapon;
-LTexture SaberTexture;
-LTexture PistolTexture;
-LTexture ShotgunTexture;
-LTexture RifleTexture;
+weapon Weapon;
+std::vector<LTexture> WeaponTexture(4);
 std::vector<std::vector <SDL_Rect>> WeaponClip(4);
 bool init();
 bool loadMedia();
@@ -230,41 +228,41 @@ bool loadMedia(){
 	{
 		loadClips(gRockTexture, gRockClips, ROCKS_CLIP);
 	}
-	if (!SaberTexture.loadFromFile("IMGfile/lightsaber.png"))
+	if (!WeaponTexture[0].loadFromFile("IMGfile/lightsaber.png"))
 	{
 		printf("Failed to load saber texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(SaberTexture, WeaponClip[0], WEAPON_CLIP);
+		loadClips(WeaponTexture[0], WeaponClip[0], WEAPON_CLIP);
 	}
-	if (!ShotgunTexture.loadFromFile("IMGfile/shotgun.png"))
+	if (!WeaponTexture[1].loadFromFile("IMGfile/shotgun.png"))
 	{
 		printf("Failed to load shotgun texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(ShotgunTexture, WeaponClip[1], WEAPON_CLIP);
+		loadClips(WeaponTexture[1], WeaponClip[1], WEAPON_CLIP);
 	}
-	if (!PistolTexture.loadFromFile("IMGfile/pistol.png"))
+	if (!WeaponTexture[2].loadFromFile("IMGfile/pistol.png"))
 	{
 		printf("Failed to load pistol texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(PistolTexture, WeaponClip[2], WEAPON_CLIP);
+		loadClips(WeaponTexture[2], WeaponClip[2], WEAPON_CLIP);
 	}
-	if (!RifleTexture.loadFromFile("IMGfile/rifle.png"))
+	if (!WeaponTexture[3].loadFromFile("IMGfile/rifle.png"))
 	{
 		printf("Failed to load rifle texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(RifleTexture, WeaponClip[3], WEAPON_CLIP);
+		loadClips(WeaponTexture[3], WeaponClip[3], WEAPON_CLIP);
 	}
 	return success;
 }
@@ -286,6 +284,7 @@ void Game()
 	{
 		//Clear screen
 		myPlayer.previousState = myPlayer.currentState;
+		Weapon.initWeapon(myPlayer.currentWeapon);
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
@@ -426,8 +425,9 @@ void handleGameInput(){
 			myPlayer.speed = 0;
 			myPlayer.currentState = playerState::IDLE;
 		}
-		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)){
-			currentWeapon.currentState= weaponState::ATTACK;
+		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false){
+			Weapon.currentState= weaponState::ATTACK;
+			attacking=true;
 		}
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
@@ -483,7 +483,7 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
-	myPlayer.direction = currentWeapon.direction;
+	myPlayer.direction = Weapon.direction;
 	float dirX = myPlayer.vx * myPlayer.speed;
 	float dirY = myPlayer.vy * myPlayer.speed;
 	myPlayer.px += dirX;
@@ -505,13 +505,14 @@ void updatePlayer(){
 	//myPlayer.drawHitbox(camera,gRenderer);
 }
 void updateWeapon(){
-	currentWeapon.px = myPlayer.px+currentWeapon.size/2.5;
-	currentWeapon.py = myPlayer.py+currentWeapon.size/4.5;
-	currentWeapon.calRotation(camera, mouseX, mouseY);
-	currentWeapon.setAnimation(RifleTexture,WeaponClip[3][currentWeapon.currentFrame]);
-	currentWeapon.updateRenderPosition();
-	currentWeapon.render(camera);
-	currentWeapon.drawHitbox(camera,gRenderer);
+	Weapon.px = myPlayer.px+Weapon.size/2.5;
+	Weapon.py = myPlayer.py+Weapon.size/4.5;
+	Weapon.calRotation(camera, mouseX, mouseY);
+	Weapon.setAnimation(WeaponTexture[myPlayer.currentWeapon],WeaponClip[myPlayer.currentWeapon][Weapon.currentFrame]);
+	Weapon.updateRenderPosition();
+	Weapon.render(camera);
+	if(attacking&&myPlayer.currentWeapon==0)
+		Weapon.getHitbox();
 }
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
@@ -521,12 +522,25 @@ void updateEnemy(){
 		spawnEnemy();
 	for(int i = 0 ; i < enemies.size();i++){
 		int tmp=enemies[i].type;
+		if(attacking){
+			if(Weapon.type==0){
+				if(Weapon.meleeAtack(enemies[i].px,enemies[i].py)){
+					std::cout<<"hi";
+					enemies[i].hurt(Weapon.damage);
+				}
+				if(enemies[i].health<=0){
+						enemies.erase(enemies.begin() + i);
+					}
+
+			}
+		}
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer,rocks);
 		enemies[i].render(camera);
 		//enemies[i].drawHitbox(camera,gRenderer);
 		
 	}
+	attacking=false;
 }
 void spawnEnemy(){
 	while (enemies.size() <  MAX_CURRENT_EMEMY )
@@ -549,12 +563,12 @@ void updateAnimation(){
 		enemies[i].currentFrame = 0;
 	}
 	}
-	if(currentWeapon.currentState== weaponState::ATTACK){
-		currentWeapon.currentFrame++;
-		if (currentWeapon.currentFrame > WEAPON_CLIP - 1)
+	if(Weapon.currentState== weaponState::ATTACK){
+		Weapon.currentFrame++;
+		if (Weapon.currentFrame > WEAPON_CLIP - 1)
 		{
-			currentWeapon.currentFrame = 0;
-			currentWeapon.currentState= weaponState::NONE;
+			Weapon.currentFrame = 0;
+			Weapon.currentState= weaponState::NONE;
 		}
 	}
 }
