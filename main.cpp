@@ -522,10 +522,10 @@ void updateEnemy(){
 		spawnEnemy();
 	for(int i = 0 ; i < enemies.size();i++){
 		int tmp=enemies[i].type;
+		enemies[i].hurted=false;
 		if(attacking){
 			if(Weapon.type==0){
 				if(Weapon.meleeAtack(enemies[i].px,enemies[i].py)){
-					std::cout<<"hi";
 					enemies[i].hurt(Weapon.damage);
 				}
 				if(enemies[i].health<=0){

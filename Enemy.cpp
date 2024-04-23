@@ -13,19 +13,19 @@ void enemy::initEnemy()
 	type = GetRandomInt(0,3,1);
 	if(type==0){
 		speed = GetRandomFloat(1,3,0.05);
-		health= 20;
+		health= 200;
 	}
 	else if(type==1){
 		speed = GetRandomFloat(3,4,0.05);
-		health = 20;
+		health = 200;
 	}
 	else if(type==2){
 		speed = GetRandomFloat(3,4,0.05);
-		health = 20;
+		health = 200;
 	}
 	else {
 		speed = GetRandomFloat(4,6,0.05);
-		health = 20;
+		health = 200;
 	}
 	currentFrame = 0;
 	currentState = enemyState::WALK;
@@ -39,8 +39,16 @@ void enemy::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 }
 void enemy::render(SDL_Rect& camera)
 {	
-	if(currentTexture!=NULL)
+
+	if(currentTexture!=NULL){
+		if(hurted){
+			currentTexture->setColor(255,0,255);
+		}
+		else{
+			currentTexture->setColor(255,255,255);
+		}
 		currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,direction);
+	}
 }
 void enemy::move(gameObject player,std::vector<gameObject> rocks){
 	if(player.px < px)
@@ -68,4 +76,5 @@ void enemy::move(gameObject player,std::vector<gameObject> rocks){
 }
 void enemy::hurt(int damage){
 	health-=damage;
+	hurted=true;
 }

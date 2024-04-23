@@ -9,6 +9,7 @@ enum struct enemyState{
 struct enemy: gameObject{
     float speed;
     int health;
+    bool hurted;
 	SDL_RendererFlip direction;
     enemyState currentState;
     enemyState previousState;

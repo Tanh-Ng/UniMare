@@ -1,7 +1,15 @@
 #pragma once
 #include "GameObject.h"
+struct bullet : gameObject
+{
+public:
+	int speed;
+	float vx;
+	float vy;
+	bullet(SDL_Rect& camera, gameObject source, int targetX, int targetY);
+};
 enum struct weaponState{
-    NONE,INHAND,ATTACK
+    NONE,ATTACK
 };
 struct weapon : gameObject{
     weapon();
