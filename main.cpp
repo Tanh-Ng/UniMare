@@ -38,8 +38,10 @@ std::vector <SDL_Rect> gRockClips;
 std::vector<gameObject> rocks;
 //weapons
 weapon Weapon;
+weapon Dummy;
 std::vector<LTexture> WeaponTexture(4);
 std::vector<std::vector <SDL_Rect>> WeaponClip(4);
+std::vector<weapon> droppedWeapon;
 bool init();
 bool loadMedia();
 void Game();
@@ -274,6 +276,7 @@ void Game()
 		//initLevel();
 		SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 		myPlayer.initPlayer();
+		Weapon.initWeapon(myPlayer.currentWeapon);
 		createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
 		allowSpawning = true;
 		initedLevel = true;
@@ -284,7 +287,7 @@ void Game()
 	{
 		//Clear screen
 		myPlayer.previousState = myPlayer.currentState;
-		Weapon.initWeapon(myPlayer.currentWeapon);
+		
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
@@ -510,6 +513,8 @@ void updateWeapon(){
 	Weapon.calRotation(camera, mouseX, mouseY);
 	Weapon.setAnimation(WeaponTexture[myPlayer.currentWeapon],WeaponClip[myPlayer.currentWeapon][Weapon.currentFrame]);
 	Weapon.updateRenderPosition();
+	for(weapon i:droppedWeapon)
+		i.render(camera);
 	Weapon.render(camera);
 	if(attacking&&myPlayer.currentWeapon==0)
 		Weapon.getHitbox();
@@ -529,7 +534,16 @@ void updateEnemy(){
 					enemies[i].hurt(Weapon.damage);
 				}
 				if(enemies[i].health<=0){
+						int odd=GetRandomInt(0,100,1);
+						if(odd%2==0){
+							Dummy.dropWeapon(enemies[i].rx,enemies[i].ry);
+							Dummy.Texture=&WeaponTexture[Dummy.type];
+							Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
+							droppedWeapon.push_back(Dummy);
+						}
+
 						enemies.erase(enemies.begin() + i);
+
 					}
 
 			}

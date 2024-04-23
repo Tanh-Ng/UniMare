@@ -1,36 +1,46 @@
 #include "Include/Weapon.h"
 weapon::weapon(){
     //init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SABER_SIZE, -1);
-    size = BASE_SIZE*1.5;
     direction = RIGHT;
     currentState = weaponState::NONE;
     previousState = weaponState::NONE;
     currentFrame = 0;
     rotation = 0;
 }
+void weapon::dropWeapon(float x,float y){
+	rx=x;
+	ry=y;
+	type = GetRandomInt(1,3,1);
+	initWeapon(type);
+}
 void weapon::initWeapon(int temp){
 	type=temp;
 	if(type == 0){
 		ratio = 1;
 		damage= 10;
+		size = BASE_SIZE*1.5;
 	}
 	else{
 		ratio = 1.783;
+		
 		if(type==1){
 			damage=10;
 			clipsize=5;
+			size = BASE_SIZE/1.7;
 		}
 		else if (type==2){
 			damage=10;
 			clipsize=5;
+			size = BASE_SIZE/2;
 		}
 		else{
 			damage=10;
 			clipsize=5;
+			size = BASE_SIZE/1.5;
 		}
 
 	}
-	size = BASE_SIZE*1.5;
+
 }
 void weapon::render(SDL_Rect& camera)
 {	
