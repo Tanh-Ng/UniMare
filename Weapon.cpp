@@ -1,6 +1,7 @@
 #include "Include/Weapon.h"
 weapon::weapon(){
     //init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SABER_SIZE, -1);
+	type=-1;
     direction = RIGHT;
     currentState = weaponState::NONE;
     previousState = weaponState::NONE;
@@ -10,7 +11,7 @@ weapon::weapon(){
 void weapon::dropWeapon(float x,float y){
 	rx=x;
 	ry=y;
-	type = GetRandomInt(1,3,1);
+	type = GetRandomInt(0,3,1);
 	initWeapon(type);
 }
 void weapon::initWeapon(int temp){

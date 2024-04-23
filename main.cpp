@@ -19,6 +19,7 @@ bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
 bool attacking=true;
+bool pickup=false;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
@@ -37,7 +38,8 @@ gameObject rock;
 std::vector <SDL_Rect> gRockClips;
 std::vector<gameObject> rocks;
 //weapons
-weapon Weapon;
+int currentSlot;
+std::vector<weapon> Weapon(TOTAL_SLOT);
 weapon Dummy;
 std::vector<LTexture> WeaponTexture(4);
 std::vector<std::vector <SDL_Rect>> WeaponClip(4);
@@ -276,18 +278,20 @@ void Game()
 		//initLevel();
 		SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 		myPlayer.initPlayer();
-		Weapon.initWeapon(myPlayer.currentWeapon);
+		Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
 		createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
 		allowSpawning = true;
 		initedLevel = true;
+		currentSlot=0;
 	}
 
 	//While application is running
 	while (initedLevel && !quit)
 	{
 		//Clear screen
+		pickup=false;
 		myPlayer.previousState = myPlayer.currentState;
-		
+		myPlayer.currentWeapon= Weapon[currentSlot].type;
 		setCamera(camera, myPlayer);
 
 		//Set the player back to idle mode
@@ -375,7 +379,14 @@ void handleGameEvent(){
 			case SDL_QUIT:
 				quit=true;
 				break;
+			case SDL_MOUSEWHEEL:
+				currentSlot=(currentSlot+1)%2;
+				
+			case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_f)
+				pickup=true;
 		}
+		
 	}
 }
 void handleGameInput(){
@@ -428,8 +439,11 @@ void handleGameInput(){
 			myPlayer.speed = 0;
 			myPlayer.currentState = playerState::IDLE;
 		}
+		if (keys[SDL_SCANCODE_F]&&!pickup){
+			pickup=true;
+		}
 		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false){
-			Weapon.currentState= weaponState::ATTACK;
+			Weapon[currentSlot].currentState= weaponState::ATTACK;
 			attacking=true;
 		}
 }
@@ -486,7 +500,7 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
-	myPlayer.direction = Weapon.direction;
+	myPlayer.direction = Weapon[currentSlot].direction;
 	float dirX = myPlayer.vx * myPlayer.speed;
 	float dirY = myPlayer.vy * myPlayer.speed;
 	myPlayer.px += dirX;
@@ -508,16 +522,27 @@ void updatePlayer(){
 	//myPlayer.drawHitbox(camera,gRenderer);
 }
 void updateWeapon(){
-	Weapon.px = myPlayer.px+Weapon.size/2.5;
-	Weapon.py = myPlayer.py+Weapon.size/4.5;
-	Weapon.calRotation(camera, mouseX, mouseY);
-	Weapon.setAnimation(WeaponTexture[myPlayer.currentWeapon],WeaponClip[myPlayer.currentWeapon][Weapon.currentFrame]);
-	Weapon.updateRenderPosition();
-	for(weapon i:droppedWeapon)
-		i.render(camera);
-	Weapon.render(camera);
+	Weapon[currentSlot].px = myPlayer.px+Weapon[currentSlot].size/2.5;
+	Weapon[currentSlot].py = myPlayer.py+Weapon[currentSlot].size/4.5;
+	Weapon[currentSlot].calRotation(camera, mouseX, mouseY);
+	Weapon[currentSlot].setAnimation(WeaponTexture[myPlayer.currentWeapon],WeaponClip[myPlayer.currentWeapon][Weapon[currentSlot].currentFrame]);
+	Weapon[currentSlot].updateRenderPosition();
+	for(int i=0;i<(int)droppedWeapon.size();i++){
+		if(myPlayer.px>=droppedWeapon[i].rx&&myPlayer.px<=droppedWeapon[i].rx+droppedWeapon[i].size*droppedWeapon[i].ratio&&myPlayer.py>=droppedWeapon[i].ry&&myPlayer.py<=droppedWeapon[i].ry+droppedWeapon[i].size&&pickup){
+			if(Weapon[TOTAL_SLOT-1].type==-1){
+				Weapon[TOTAL_SLOT-1]=droppedWeapon[i];
+			}
+			else{
+				Weapon[currentSlot]=droppedWeapon[i];
+			}
+			droppedWeapon.erase(droppedWeapon.begin()+i);
+			
+		}
+		droppedWeapon[i].render(camera);
+	}
+	Weapon[currentSlot].render(camera);
 	if(attacking&&myPlayer.currentWeapon==0)
-		Weapon.getHitbox();
+		Weapon[currentSlot].getHitbox();
 }
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
@@ -529,9 +554,9 @@ void updateEnemy(){
 		int tmp=enemies[i].type;
 		enemies[i].hurted=false;
 		if(attacking){
-			if(Weapon.type==0){
-				if(Weapon.meleeAtack(enemies[i].px,enemies[i].py)){
-					enemies[i].hurt(Weapon.damage);
+			if(Weapon[currentSlot].type==0){
+				if(Weapon[currentSlot].meleeAtack(enemies[i].px,enemies[i].py)){
+					enemies[i].hurt(Weapon[currentSlot].damage);
 				}
 				if(enemies[i].health<=0){
 						int odd=GetRandomInt(0,100,1);
@@ -577,12 +602,12 @@ void updateAnimation(){
 		enemies[i].currentFrame = 0;
 	}
 	}
-	if(Weapon.currentState== weaponState::ATTACK){
-		Weapon.currentFrame++;
-		if (Weapon.currentFrame > WEAPON_CLIP - 1)
+	if(Weapon[currentSlot].currentState== weaponState::ATTACK){
+		Weapon[currentSlot].currentFrame++;
+		if (Weapon[currentSlot].currentFrame > WEAPON_CLIP - 1)
 		{
-			Weapon.currentFrame = 0;
-			Weapon.currentState= weaponState::NONE;
+			Weapon[currentSlot].currentFrame = 0;
+			Weapon[currentSlot].currentState= weaponState::NONE;
 		}
 	}
 }

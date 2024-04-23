@@ -49,6 +49,7 @@ const int MAX_ROCKS_NUM=10*LEVEL_SIZE;
 static int MIN_ROCK_SIZE = BASE_SIZE;
 static int MAX_ROCK_SIZE = BASE_SIZE * 3;
 const int  WEAPON_CLIP = 9;
+const int TOTAL_SLOT= 2;
 static int SABER_SIZE = BASE_SIZE/2;
 const double PI = 3.14159265358979323846;
 const SDL_RendererFlip RIGHT = SDL_FLIP_NONE;
