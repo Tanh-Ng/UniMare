@@ -7,6 +7,7 @@ SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
 LTexture gRockTexture;
+LTexture gBulletTexture;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event event;
@@ -44,6 +45,7 @@ weapon Dummy;
 std::vector<LTexture> WeaponTexture(4);
 std::vector<std::vector <SDL_Rect>> WeaponClip(4);
 std::vector<weapon> droppedWeapon;
+std::vector<bullet> bullets;
 bool init();
 bool loadMedia();
 void Game();
@@ -52,6 +54,7 @@ void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
 void updatePlayer();
 void updateWeapon();
+void updateBullet();
 void spawnEnemy();
 void updateEnemy();
 void updateAnimation();
@@ -268,6 +271,11 @@ bool loadMedia(){
 	{
 		loadClips(WeaponTexture[3], WeaponClip[3], WEAPON_CLIP);
 	}
+	if (!gBulletTexture.loadFromFile("IMGfile/bullet.png"))
+	{
+		printf("Failed to load bullet texture!\n");
+		success = false;
+	}
 	return success;
 }
 void Game()
@@ -301,7 +309,7 @@ void Game()
 		myPlayer.speed=PLAYER_SPEED;
 		handleGameEvent();
 		handleGameInput();
-		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
 		SDL_RenderClear(gRenderer);
 
 		//Render ground
@@ -314,6 +322,7 @@ void Game()
 			}
 		}
 		updateWeapon();
+		updateBullet();
 		updatePlayer();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
@@ -445,6 +454,10 @@ void handleGameInput(){
 		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false){
 			Weapon[currentSlot].currentState= weaponState::ATTACK;
 			attacking=true;
+			if(Weapon[currentSlot].type>=1){
+			bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY);
+			bullets.push_back(myBullet);
+			}
 		}
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
@@ -525,6 +538,7 @@ void updateWeapon(){
 	Weapon[currentSlot].px = myPlayer.px+Weapon[currentSlot].size/2.5;
 	Weapon[currentSlot].py = myPlayer.py+Weapon[currentSlot].size/4.5;
 	Weapon[currentSlot].calRotation(camera, mouseX, mouseY);
+	//std::cout<<Weapon[currentSlot].rotation<<" ";
 	Weapon[currentSlot].setAnimation(WeaponTexture[myPlayer.currentWeapon],WeaponClip[myPlayer.currentWeapon][Weapon[currentSlot].currentFrame]);
 	Weapon[currentSlot].updateRenderPosition();
 	for(int i=0;i<(int)droppedWeapon.size();i++){
@@ -544,6 +558,78 @@ void updateWeapon(){
 	if(attacking&&myPlayer.currentWeapon==0)
 		Weapon[currentSlot].getHitbox();
 }
+void updateBullet()
+{
+	int i = 0;
+	while (i < bullets.size())
+	{
+		if(bullets[i].direction==RIGHT){
+		bullets[i].px += bullets[i].vx;
+		bullets[i].py += bullets[i].vy;
+		}
+		else{
+		bullets[i].px -= bullets[i].vx;
+		bullets[i].py -= bullets[i].vy;
+		}
+
+		//delete bullet if its out of view
+		if (bullets[i].calDistance(myPlayer) > SCREEN_WIDTH)
+		{
+			bullets.erase(bullets.begin() + i);
+		}
+		else
+		{
+			bool collised = false;
+			//check bullet collision
+			//rock
+			for(gameObject j:rocks)
+			{
+				if (bullets[i].checkCollision(j,0))
+				{
+					collised = true;
+					break;
+				}
+			}
+			//enemies
+			for (int j = 0; j < enemies.size(); j++)
+			{
+				if (bullets[i].checkCollision(enemies[j],0))
+				{
+					collised = true;
+					enemies[j].hurt(bullets[i].damage);
+					//remove zombie if it's health is below 0
+					if (enemies[j].health < 0)
+					{
+						int odd=GetRandomInt(0,100,1);
+						if(odd%2==0){
+							Dummy.dropWeapon(enemies[j].rx,enemies[j].ry);
+							Dummy.Texture=&WeaponTexture[Dummy.type];
+							Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
+							droppedWeapon.push_back(Dummy);
+						}
+						enemies.erase(enemies.begin() + j);
+					}
+					break;
+				}
+				
+			}
+			//delete current bullet if it's collided with something
+			if (collised)
+			{
+				bullets.erase(bullets.begin() + i);
+			}
+			else
+			{
+				//update bullet position
+				bullets[i].updateRenderPosition();
+				//render bullet
+				gBulletTexture.render(camera, bullets[i].rx, bullets[i].ry, bullets[i].size, bullets[i].size, NULL, bullets[i].rotation);
+				i++;
+			}
+		}
+	}
+}
+
 void setPlayerAnimation(){
 	myPlayer.setAnimation(gPlayerTexture[myPlayer.currentState],gPlayerClips[myPlayer.currentState][myPlayer.currentFrame]);
 }
@@ -552,7 +638,7 @@ void updateEnemy(){
 		spawnEnemy();
 	for(int i = 0 ; i < enemies.size();i++){
 		int tmp=enemies[i].type;
-		enemies[i].hurted=false;
+		
 		if(attacking){
 			if(Weapon[currentSlot].type==0){
 				if(Weapon[currentSlot].meleeAtack(enemies[i].px,enemies[i].py)){
@@ -573,9 +659,11 @@ void updateEnemy(){
 
 			}
 		}
+		
 		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer,rocks);
 		enemies[i].render(camera);
+		enemies[i].hurted=false;
 		//enemies[i].drawHitbox(camera,gRenderer);
 		
 	}

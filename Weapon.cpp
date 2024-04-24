@@ -1,4 +1,31 @@
 #include "Include/Weapon.h"
+bullet::bullet(SDL_Rect& camera, weapon source, int targetX, int targetY)
+{
+	size = BULLET_SIZE;
+	direction=source.direction;
+	damage=source.damage;
+	float offsetX = 30;
+	float offsetY = 20;
+	double theta = source.rotation * (PI / 180);
+	px = source.px + (offsetX * cos(theta) - offsetY * sin(theta));
+	py = source.py + (offsetX * sin(theta) + offsetY * cos(theta));
+	//px = source.px;
+	//py = source.py;
+	setRenderPosition(px, py);
+	speed = 40;
+	rotation = source.rotation;
+	float screenX = calOnScreenXPosition(camera, px);
+	float screenY = calOnScreenYPosition(camera, py);
+	float tempX = targetX - screenX;
+	float tempY = targetY - screenY;
+	float dirX = 0;
+	float dirY = 0;
+	dirX = cos(rotation * PI / 180.0);
+	dirY = sin(rotation * PI / 180.0);
+	std::cout<<rotation<<" ";
+	vx = dirX * speed;
+	vy = dirY * speed;
+}
 weapon::weapon(){
     //init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, SABER_SIZE, -1);
 	type=-1;

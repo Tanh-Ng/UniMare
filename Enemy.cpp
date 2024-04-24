@@ -2,10 +2,11 @@
 enemy::enemy()
 {
     size = PLAYER_SIZE;
-	
+	hurted=false;	
 }
 void enemy::initEnemy()
 {
+	hurted=false;
 	int randomX = GetRandomInt(size, LEVEL_WIDTH - size, 1);
 	int randomY = GetRandomInt(size, LEVEL_HEIGHT - size, 1);
 	setPosition(randomX, randomY);
@@ -42,7 +43,7 @@ void enemy::render(SDL_Rect& camera)
 
 	if(currentTexture!=NULL){
 		if(hurted){
-			currentTexture->setColor(255,0,255);
+			currentTexture->setColor(255,0,0,255);
 		}
 		else{
 			currentTexture->setColor(255,255,255);
