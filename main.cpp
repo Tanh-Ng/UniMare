@@ -45,6 +45,7 @@ weapon Dummy;
 std::vector<LTexture> WeaponTexture(4);
 std::vector<std::vector <SDL_Rect>> WeaponClip(4);
 std::vector<weapon> droppedWeapon;
+int cooldown;
 std::vector<bullet> bullets;
 bool init();
 bool loadMedia();
@@ -291,6 +292,7 @@ void Game()
 		allowSpawning = true;
 		initedLevel = true;
 		currentSlot=0;
+		cooldown=0;
 	}
 
 	//While application is running
@@ -451,13 +453,23 @@ void handleGameInput(){
 		if (keys[SDL_SCANCODE_F]&&!pickup){
 			pickup=true;
 		}
-		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false){
+		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false&&cooldown==0){
 			Weapon[currentSlot].currentState= weaponState::ATTACK;
 			attacking=true;
-			if(Weapon[currentSlot].type>=1){
-			bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY);
-			bullets.push_back(myBullet);
+			if(Weapon[currentSlot].type>=2){
+				int acc=GetRandomFloat(-17,15,3);
+				bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,acc);
+				bullets.push_back(myBullet);
 			}
+			else if(Weapon[currentSlot].type==1){
+				for(int i=-20;i<30;i+=10){
+					bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,i);
+					bullets.push_back(myBullet);
+				}
+			}
+			
+			cooldown=Weapon[currentSlot].cd;
+			
 		}
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
@@ -535,6 +547,8 @@ void updatePlayer(){
 	//myPlayer.drawHitbox(camera,gRenderer);
 }
 void updateWeapon(){
+	cooldown-=1;
+	if(cooldown<=0)	cooldown=0;
 	Weapon[currentSlot].px = myPlayer.px+Weapon[currentSlot].size/2.5;
 	Weapon[currentSlot].py = myPlayer.py+Weapon[currentSlot].size/4.5;
 	Weapon[currentSlot].calRotation(camera, mouseX, mouseY);

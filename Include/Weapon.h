@@ -6,7 +6,7 @@ enum struct weaponState{
 };
 struct weapon : gameObject{
     weapon();
-    
+    int cd;
     float damage;
     double ratio = 1;
     int clipsize;
@@ -33,5 +33,5 @@ struct bullet : gameObject
 	float vx;
 	float vy;
     SDL_RendererFlip direction;
-	bullet(SDL_Rect& camera, weapon source, int targetX, int targetY);
+	bullet(SDL_Rect& camera, weapon source, int targetX, int targetY,int accuracy);
 };

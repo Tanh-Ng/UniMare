@@ -1,19 +1,16 @@
 #include "Include/Weapon.h"
-bullet::bullet(SDL_Rect& camera, weapon source, int targetX, int targetY)
+bullet::bullet(SDL_Rect& camera, weapon source, int targetX, int targetY,int accuracy)
 {
 	size = BULLET_SIZE;
 	direction=source.direction;
 	damage=source.damage;
-	float offsetX = 30;
-	float offsetY = 20;
-	double theta = source.rotation * (PI / 180);
-	px = source.px + (offsetX * cos(theta) - offsetY * sin(theta));
-	py = source.py + (offsetX * sin(theta) + offsetY * cos(theta));
-	//px = source.px;
-	//py = source.py;
+	px = source.px-20;
+	if(direction==LEFT)
+		px+=90;
+	py = source.py+source.centerPoint.y-20;
 	setRenderPosition(px, py);
-	speed = 40;
-	rotation = source.rotation;
+	speed = 20;
+	rotation = source.rotation+accuracy;
 	float screenX = calOnScreenXPosition(camera, px);
 	float screenY = calOnScreenYPosition(camera, py);
 	float tempX = targetX - screenX;
@@ -22,7 +19,6 @@ bullet::bullet(SDL_Rect& camera, weapon source, int targetX, int targetY)
 	float dirY = 0;
 	dirX = cos(rotation * PI / 180.0);
 	dirY = sin(rotation * PI / 180.0);
-	std::cout<<rotation<<" ";
 	vx = dirX * speed;
 	vy = dirY * speed;
 }
@@ -44,25 +40,29 @@ void weapon::dropWeapon(float x,float y){
 void weapon::initWeapon(int temp){
 	type=temp;
 	if(type == 0){
+		cd=30;
 		ratio = 1;
-		damage= 10;
+		damage= 100;
 		size = BASE_SIZE*1.5;
 	}
 	else{
 		ratio = 1.783;
 		
 		if(type==1){
-			damage=10;
+			cd=30;
+			damage=50;
 			clipsize=5;
 			size = BASE_SIZE/1.7;
 		}
 		else if (type==2){
-			damage=10;
+			cd=30;
+			damage=100;
 			clipsize=5;
 			size = BASE_SIZE/2;
 		}
 		else{
-			damage=10;
+			cd=10;
+			damage=150;
 			clipsize=5;
 			size = BASE_SIZE/1.5;
 		}
