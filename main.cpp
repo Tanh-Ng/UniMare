@@ -3,12 +3,17 @@
 #include "Include/Player.h"
 #include "Include/Enemy.h"
 #include "Include/Weapon.h"
+#include "Include/Button.h"
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
 LTexture gRockTexture;
 LTexture gBulletTexture;
 LTexture gCrosshairTexture;
+LTexture gMenuTexture;
+SDL_Color UIColor = {0,0,0};
+//backdrop texture used for pause screen
+SDL_Texture* backdrop;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event event;
@@ -17,8 +22,11 @@ const Uint8* keys;
 int mouseX;
 int mouseY;
 Uint32 mouses;
+button myButton;
+std::vector<button> buttons;
 bool initedLevel=false;
 bool quit=false;
+bool paused=true;
 bool allowSpawning=false;
 bool pickup=false;
 int level = 0;
@@ -49,8 +57,30 @@ std::vector<std::vector <SDL_Rect>> WeaponClip(4);
 std::vector<weapon> droppedWeapon;
 int cooldown;
 std::vector<bullet> bullets;
+//fonts;
+const int fontSize = SCREEN_HEIGHT / 30;
+const int fontSizeSmall = SCREEN_HEIGHT / 40;
+const int fontSizeLarge = SCREEN_HEIGHT / 20;
+const int fontSizeTitle = SCREEN_HEIGHT / 7.5;
+TTF_Font* boldFont;
+TTF_Font* regularFont;
+TTF_Font* boldFontSmall;
+TTF_Font* boldFontLarge;
+TTF_Font* boldFontTitle;
+TTF_Font* regularFontSmall;
 bool init();
 bool loadMedia();
+void clearScreen();
+void handleMenuEvent(int& choice);
+void Menu();
+//confirm screen
+void Confirm();
+enum class confirmState { FALSE, RETRY, QUIT, QUIT_TO_MENU };
+confirmState confirmMode;
+void showConfirmScreen(confirmState m);
+void hideConfirmScreen();
+bool confirmScreen = false; //flag
+void handleConfirmEvent(int& choice);
 void Game();
 void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType);
 void setCamera(SDL_Rect& camera, gameObject target);
@@ -113,6 +143,11 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
+		if (TTF_Init() == -1)
+		{
+			printf("Unable to init TTF: %s\n", SDL_GetError());
+			success = false;
+		}
 		//Set texture filtering to linear
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
@@ -155,14 +190,20 @@ int main(int argc, char* argv[])
 
 	StateStruct state;
 	//add menu 
-	state.StatePointer = Game;
+	state.StatePointer = Menu;
 	g_StateStack.push(state);
 	return success;
 }
 bool loadMedia(){
 	bool success = true;
 		//Load static texture
-	if (!gGroundTexture.loadFromFile("IMGfile/ground2.png"))
+		
+	if (!gMenuTexture.loadFromFile("IMGfile/background.png"))
+	{
+		printf("Failed to load background texture!\n");
+		success = false;
+	}	
+	if (!gGroundTexture.loadFromFile("IMGfile/ground.png"))
 	{
 		printf("Failed to load ground texture!\n");
 		success = false;
@@ -285,7 +326,301 @@ bool loadMedia(){
 		printf("Failed to load crosshair texture!\n");
 		success = false;
 	}
+	//fonts
+	boldFont = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSize);
+	if (boldFont == NULL) {
+		printf("Failed to load bold font! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
+
+	boldFontSmall = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSizeSmall);
+	if (boldFontSmall == NULL) {
+		printf("Failed to load bold font small! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
+
+	boldFontLarge = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSizeLarge);
+	if (boldFontLarge == NULL) {
+		printf("Failed to load bold font large! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
+
+	boldFontTitle = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSizeTitle);
+	if (boldFontTitle == NULL) {
+		printf("Failed to load bold font title! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
+
+	regularFont = TTF_OpenFont("Font/OpenSans-Regular.ttf", fontSize);
+	if (regularFont == NULL) {
+		printf("Failed to load regular font! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
+
+	regularFontSmall = TTF_OpenFont("Font/OpenSans-Regular.ttf", fontSizeSmall);
+	if (regularFontSmall == NULL) {
+		printf("Failed to load regular font small! TTF Error: %s\n", TTF_GetError());
+		success = false;
+	}
 	return success;
+}
+void clearScreen()
+{
+	//Clear screen
+	SDL_SetRenderDrawColor(gRenderer, 100, 100, 100, 0);
+	SDL_RenderClear(gRenderer);
+}
+void handleMenuEvent(int& choice)
+{
+	//Poll events
+	while (SDL_PollEvent(&event))
+	{
+		//check events
+		switch (event.type)
+		{
+		case SDL_QUIT: //User hit the X
+			choice = 1;
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				//resize window
+				SDL_SetWindowSize(gWindow, event.window.data1, event.window.data2);
+				//SCREEN_WIDTH = event.window.data1;
+				//SCREEN_HEIGHT = event.window.data2;
+			}
+			break;
+		case SDL_KEYDOWN:
+			break;
+		case SDL_MOUSEBUTTONUP:
+			//start button
+			if (buttons[0].checkInside(mouseX, mouseY))
+			{
+				choice = 0;
+			}
+			//quit
+			if (buttons[1].checkInside(mouseX, mouseY))
+			{
+				choice = 1;
+			}
+			break;
+		}
+	}
+
+	
+}
+void Menu(){
+	//show back the cursor
+	SDL_ShowCursor(SDL_ENABLE);
+	//SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //set the cursor to center of the window
+
+	//set text positions
+	int textOffset = SCREEN_HEIGHT / 4;
+	int textX = SCREEN_WIDTH / 2;
+	int textY = SCREEN_HEIGHT / 2 - textOffset;
+
+	//add buttons
+	//start button
+	int buttonpy = textY + SCREEN_HEIGHT / 7.5 + 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Start", regularFont);
+	buttons.push_back(myButton);
+	//quit button
+	buttonpy += 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Quit", regularFont);
+	buttons.push_back(myButton);
+
+	int choice = -1; //0 for yes, 1 for no
+
+	while (choice == -1)
+	{
+		mouses = SDL_GetMouseState(&mouseX, &mouseY);
+		handleMenuEvent(choice);
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_RenderClear(gRenderer);
+		//Render black overlay 
+		gMenuTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		//Render title
+		drawText(textX, textY, boldFontTitle, UIColor, "UNI MARE!", 1);
+
+		//set toggle music text
+		//Render buttons
+		for (int i = 0; i < buttons.size(); i++)
+		{
+			buttons[i].checkButton(mouses, mouseX, mouseY);
+			buttons[i].render(gRenderer);
+		}
+		//Update screen
+		SDL_RenderPresent(gRenderer);
+	}
+	//remove all buttons
+	buttons.clear();
+	clearScreen();
+	StateStruct temp;
+	switch (choice)
+	{
+	case 0: //start
+		initedLevel = false;
+		temp.StatePointer = Game;
+		g_StateStack.push(temp);
+		break;
+	case 1: //quit
+		showConfirmScreen(confirmState::QUIT);
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+	}
+
+	//get backdrop
+	backdrop = gMenuTexture.getSDLTexture();
+}
+void Confirm()
+{
+	//show back the cursor
+	SDL_ShowCursor(SDL_ENABLE);
+	//SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //set the cursor to center of the window
+	//set text positions
+	int textOffset = SCREEN_HEIGHT / 10;
+	int textX = SCREEN_WIDTH / 2;
+	int textY = SCREEN_HEIGHT / 2 - textOffset;
+
+	//add buttons
+	//yes button
+	int buttonpy = textY + 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Yes", regularFont);
+	buttons.push_back(myButton);
+	//no button
+	buttonpy += 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "No", regularFont);
+	buttons.push_back(myButton);
+
+	int choice = -1; //0 for yes, 1 for no
+
+	while (choice == -1)
+	{
+		mouses = SDL_GetMouseState(&mouseX, &mouseY);
+		handleConfirmEvent(choice);
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_RenderClear(gRenderer);
+		//Render backdrop
+		SDL_RenderCopy(gRenderer, backdrop, NULL, NULL);
+		std::string confirmText = "";
+		//Render text
+		switch (confirmMode)
+		{
+		case confirmState::RETRY:
+			confirmText = "Are you sure you want to retry the level?";
+			break;
+		case confirmState::QUIT:
+			confirmText = "Are you sure you want to quit?";
+			break;
+		case confirmState::QUIT_TO_MENU:
+			confirmText = "Are you sure you want to quit to menu?";
+			break;
+		}
+		drawText(textX, textY, boldFontLarge, UIColor, confirmText, 1);
+
+		//Render buttons
+		for (int i = 0; i < buttons.size(); i++)
+		{
+			buttons[i].checkButton(mouses, mouseX, mouseY);
+			buttons[i].render(gRenderer);
+		}
+
+		//Update screen
+		SDL_RenderPresent(gRenderer);
+	}
+	//remove all buttons
+	buttons.clear();
+
+	clearScreen();
+
+	StateStruct temp;
+	switch (choice)
+	{
+	case 0:
+		if (confirmMode == confirmState::RETRY) //retry
+		{
+			hideConfirmScreen();
+			initedLevel = false;
+			paused = false;
+			g_StateStack.pop();
+		}
+		if (confirmMode == confirmState::QUIT) //quit
+		{
+			temp.StatePointer = Exit;
+			g_StateStack.push(temp);
+		}
+		if (confirmMode == confirmState::QUIT_TO_MENU) //quit to menu
+		{
+			g_StateStack.swap(emptyStack);
+			temp.StatePointer = Menu;
+			g_StateStack.push(temp);
+		}
+		break;
+	case 1:
+		hideConfirmScreen();
+		break;
+	case 2:
+		hideConfirmScreen();
+		showConfirmScreen(confirmState::QUIT);
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+	}
+}
+void showConfirmScreen(confirmState m)
+{
+	confirmScreen = true;
+	confirmMode = m;
+}
+void hideConfirmScreen()
+{
+	confirmScreen = false;
+	confirmMode = confirmState::FALSE;
+	g_StateStack.pop();
+}
+
+void handleConfirmEvent(int& choice)
+{
+	//Poll events
+	while (SDL_PollEvent(&event))
+	{
+		//check events
+		switch (event.type)
+		{
+		case SDL_QUIT: //User hit the X
+			choice = 2;
+			//confirmMode = confirmState::QUIT;
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				//resize window
+				SDL_SetWindowSize(gWindow, event.window.data1, event.window.data2);
+				//SCREEN_WIDTH = event.window.data1;
+				//SCREEN_HEIGHT = event.window.data2;
+			}
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_ESCAPE) //esc
+			{
+				choice = 1;
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			//yes button
+			if (buttons[0].checkInside(mouseX, mouseY))
+			{
+				choice = 0;
+			}
+			//no button
+			if (buttons[1].checkInside(mouseX, mouseY))
+			{
+				choice = 1;
+			}
+			break;
+		}
+	}
 }
 void Game()
 {
@@ -381,15 +716,28 @@ void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorLi
 	}
 }
 void close(){
-		gGroundTexture.free();
-		gRockTexture.free();
-		SDL_DestroyRenderer(gRenderer);
-		SDL_DestroyWindow(gWindow);
-		gWindow = NULL;
-		gRenderer = NULL;
-		IMG_Quit();
-		SDL_Quit();
-		g_StateStack.swap(emptyStack);
+	gGroundTexture.free();
+	gRockTexture.free();
+	SDL_DestroyRenderer(gRenderer);
+	SDL_DestroyWindow(gWindow);
+	gWindow = NULL;
+	gRenderer = NULL;
+		//Free fonts
+	TTF_CloseFont(boldFont);
+	boldFont = NULL;
+	TTF_CloseFont(boldFontSmall);
+	boldFontSmall = NULL;
+	TTF_CloseFont(boldFontLarge);
+	boldFontLarge = NULL;
+	TTF_CloseFont(boldFontTitle);
+	boldFontTitle = NULL;
+	TTF_CloseFont(regularFont);
+	regularFont = NULL;
+	TTF_CloseFont(regularFontSmall);
+	regularFontSmall = NULL;
+	IMG_Quit();
+	SDL_Quit();
+	g_StateStack.swap(emptyStack);
 }
 void Exit()
 {
