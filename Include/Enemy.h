@@ -4,12 +4,15 @@
 #include "Player.h"
 extern player myPlayer;
 enum struct enemyState{
-    ATTACK,WALK,DEAD
+    WALK,DEAD
 };
 struct enemy: gameObject{
+    int damage;
     float speed;
     int health;
     bool hurted;
+    int attackSpeed;
+    int attackTimer;
 	SDL_RendererFlip direction;
     enemyState currentState;
     enemyState previousState;

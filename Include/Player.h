@@ -7,6 +7,8 @@ struct player: gameObject{
     int vx,vy;
     int health;
     int currentWeapon;
+    bool hurted;
+    bool attacking;
     float speed;
     SDL_RendererFlip direction;
     playerState currentState;
@@ -18,4 +20,5 @@ struct player: gameObject{
     void initPlayer();
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
+    void hurt(int damage);
 };

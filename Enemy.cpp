@@ -12,19 +12,27 @@ void enemy::initEnemy()
 	setPosition(randomX, randomY);
 	setRenderPosition(px, py);
 	type = GetRandomInt(0,3,1);
+	attackTimer=0;
 	if(type==0){
+		damage = 5;
 		speed = GetRandomFloat(1,3,0.05);
 		health= 200;
+		attackSpeed=40;
 	}
 	else if(type==1){
+		damage = 10;
 		speed = GetRandomFloat(3,4,0.05);
 		health = 200;
+		attackSpeed=40;
 	}
 	else if(type==2){
+		damage = 5;
 		speed = GetRandomFloat(3,4,0.05);
 		health = 200;
+		attackSpeed=30;
 	}
 	else {
+		damage = 5;
 		speed = GetRandomFloat(4,6,0.05);
 		health = 200;
 	}

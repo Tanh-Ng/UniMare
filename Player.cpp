@@ -9,6 +9,7 @@ player::player()
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
 	direction = RIGHT;
+	attacking =false;
 }
 void player::initPlayer()
 {
@@ -21,6 +22,7 @@ void player::initPlayer()
 	currentState = playerState::IDLE;
 	previousState = playerState::IDLE;
 	direction = RIGHT;
+	attacking = false;
 }
 void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {
@@ -29,6 +31,17 @@ void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 }
 void player::render(SDL_Rect& camera)
 {	
-	if(currentTexture!=NULL)
+	if(currentTexture!=NULL){
+		if(hurted){
+			currentTexture->setColor(255,0,0,255);
+		}
+		else{
+			currentTexture->setColor(255,255,255);
+		}
 	currentTexture->render(rx - camera.x,ry - camera.y,size, size,currentClip,0,NULL,direction);
+	}
+}
+void player::hurt(int damage){
+	hurted=true;
+	health=health-damage;
 }

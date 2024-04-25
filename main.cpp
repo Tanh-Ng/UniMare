@@ -19,7 +19,6 @@ Uint32 mouses;
 bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
-bool attacking=true;
 bool pickup=false;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
@@ -453,9 +452,9 @@ void handleGameInput(){
 		if (keys[SDL_SCANCODE_F]&&!pickup){
 			pickup=true;
 		}
-		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&attacking==false&&cooldown==0){
+		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&myPlayer.attacking==false&&cooldown==0){
 			Weapon[currentSlot].currentState= weaponState::ATTACK;
-			attacking=true;
+			myPlayer.attacking=true;
 			if(Weapon[currentSlot].type>=2){
 				int acc=GetRandomFloat(-17,15,3);
 				bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,acc);
@@ -525,25 +524,28 @@ void setCamera(SDL_Rect& camera, gameObject target) {
 	}
 }
 void updatePlayer(){
-	myPlayer.direction = Weapon[currentSlot].direction;
-	float dirX = myPlayer.vx * myPlayer.speed;
-	float dirY = myPlayer.vy * myPlayer.speed;
-	myPlayer.px += dirX;
-	myPlayer.py += dirY;
-	bool collided =false;
-	for(gameObject i:rocks){
-		if(myPlayer.checkCollision(i,0)){
-		collided=true;
-		break;
+	if(myPlayer.health>0){
+		myPlayer.direction = Weapon[currentSlot].direction;
+		float dirX = myPlayer.vx * myPlayer.speed;
+		float dirY = myPlayer.vy * myPlayer.speed;
+		myPlayer.px += dirX;
+		myPlayer.py += dirY;
+		bool collided =false;
+		for(gameObject i:rocks){
+			if(myPlayer.checkCollision(i,0)){
+			collided=true;
+			break;
+			}
 		}
+		if(collided){
+			myPlayer.px -= dirX;
+			myPlayer.py -= dirY;
+		}
+		setPlayerAnimation();
+		myPlayer.updateRenderPosition();
+		myPlayer.render(camera);
+		myPlayer.hurted=false;
 	}
-	if(collided){
-	myPlayer.px -= dirX;
-	myPlayer.py -= dirY;
-	}
-	setPlayerAnimation();
-	myPlayer.updateRenderPosition();
-	myPlayer.render(camera);
 	//myPlayer.drawHitbox(camera,gRenderer);
 }
 void updateWeapon(){
@@ -569,7 +571,7 @@ void updateWeapon(){
 		droppedWeapon[i].render(camera);
 	}
 	Weapon[currentSlot].render(camera);
-	if(attacking&&myPlayer.currentWeapon==0)
+	if(myPlayer.attacking&&myPlayer.currentWeapon==0)
 		Weapon[currentSlot].getHitbox();
 }
 void updateBullet()
@@ -651,14 +653,22 @@ void updateEnemy(){
 	if(allowSpawning)
 		spawnEnemy();
 	for(int i = 0 ; i < enemies.size();i++){
-		int tmp=enemies[i].type;
-		
-		if(attacking){
+		if(enemies[i].attackTimer--<=0)
+			enemies[i].attackTimer=0;
+		if(enemies[i].currentState!=enemyState::DEAD&&enemies[i].checkCollision(myPlayer,3)&&enemies[i].attackTimer==0){
+					std::cout<<"hi";
+					myPlayer.hurt(enemies[i].damage);
+					enemies[i].attackTimer=enemies[i].attackSpeed;
+					if(enemies[i].type==3)
+						enemies[i].currentState=enemyState::DEAD;
+				}
+		if(myPlayer.attacking){
 			if(Weapon[currentSlot].type==0){
 				if(Weapon[currentSlot].meleeAtack(enemies[i].px,enemies[i].py)){
 					enemies[i].hurt(Weapon[currentSlot].damage);
 				}
 				if(enemies[i].health<=0){
+						enemies[i].currentState=enemyState::DEAD;
 						int odd=GetRandomInt(0,100,1);
 						if(odd%2==0){
 							Dummy.dropWeapon(enemies[i].rx,enemies[i].ry);
@@ -666,25 +676,20 @@ void updateEnemy(){
 							Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
 							droppedWeapon.push_back(Dummy);
 						}
-
-						enemies.erase(enemies.begin() + i);
-
 					}
-
 			}
 		}
-		
-		enemies[i].setAnimation(gEnemyTexture[tmp][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
+		enemies[i].setAnimation(gEnemyTexture[enemies[i].type][enemies[i].currentState],gEnemyClips[enemies[i].currentState][enemies[i].currentFrame]);
 		enemies[i].move(myPlayer,rocks);
 		enemies[i].render(camera);
 		enemies[i].hurted=false;
-		//enemies[i].drawHitbox(camera,gRenderer);
-		
+		if(enemies[i].currentState==enemyState::DEAD)
+			enemies.erase(enemies.begin() + i);
 	}
-	attacking=false;
+	myPlayer.attacking=false;
 }
 void spawnEnemy(){
-	while (enemies.size() <  MAX_CURRENT_EMEMY )
+	while (enemies.size() < MAX_CURRENT_EMEMY )
 		{
 			myEnemy.initEnemy();
 			enemies.push_back(myEnemy);
