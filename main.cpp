@@ -85,6 +85,14 @@ void Game();
 void Pause();
 bool paused = false; //flag
 void handlePauseEvent();
+//end game screen
+void EndGame();
+enum class endState { FALSE, WIN, LOSE};
+endState endGameMode = endState::FALSE;
+void showEndGamecreen(endState m);
+void hideEndGameScreen();
+bool endGameScreen = false; //flag
+void handleEndGameEvent(int& choice);
 void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType);
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
@@ -656,9 +664,15 @@ void Game()
 	}
 
 	//While application is running
-	while (initedLevel && !quit &&!paused&& !confirmScreen)
+	while (initedLevel && !quit &&!paused&& !confirmScreen&&!endGameScreen)
 	{
 		//Clear screen
+		if(enemiesCount>=target){
+			level++;
+			target=20+level*20;
+			enemiesCount=0;
+
+		}
 		SDL_ShowCursor(SDL_DISABLE);
 		pickup=false;
 		myPlayer.previousState = myPlayer.currentState;
@@ -711,6 +725,11 @@ void Game()
 	if (confirmScreen)
 	{
 		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+	}
+	if (endGameScreen)
+	{
+		temp.StatePointer = EndGame;
 		g_StateStack.push(temp);
 	}
 	if (quit)
@@ -776,11 +795,9 @@ void Pause()
 	int pausedOffset = SCREEN_HEIGHT / 3.5;
 	int pausedX = SCREEN_WIDTH / 2;
 	int pausedY = SCREEN_HEIGHT / 2 - pausedOffset;
-	int tipsX = SCREEN_WIDTH / 2;
-	int tipsY = pausedY + SCREEN_HEIGHT / 5;
 	//add buttons
 	//resume button
-	int buttonpy = tipsY + 75;
+	int buttonpy = pausedY + SCREEN_HEIGHT / 5 + 75;
 	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Resume", regularFont);
 	buttons.push_back(myButton);
 	//retry button
@@ -823,6 +840,139 @@ void Pause()
 	else
 	{
 		g_StateStack.pop();
+	}
+}
+void showEndGamecreen(endState m)
+{
+	endGameScreen = true;
+	endGameMode = m;
+}
+
+void hideEndGameScreen()
+{
+	endGameScreen = false;
+	endGameMode = endState::FALSE;
+	paused = false;
+	confirmScreen = false;
+	g_StateStack.pop();
+}
+
+void handleEndGameEvent(int& choice)
+{
+	//Poll events
+	while (SDL_PollEvent(&event))
+	{
+		//check events
+		switch (event.type)
+		{
+		case SDL_QUIT: //User hit the X
+			choice = 2;
+			//confirmMode = confirmState::QUIT;
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				//resize window
+				SDL_SetWindowSize(gWindow, event.window.data1, event.window.data2);
+				//SCREEN_WIDTH = event.window.data1;
+				//SCREEN_HEIGHT = event.window.data2;
+			}
+			break;
+		case SDL_KEYDOWN:
+			break;
+		case SDL_MOUSEBUTTONUP:
+			//retry button
+			if (buttons[0].checkInside(mouseX, mouseY))
+			{
+				choice = 0;
+			}
+			//quit to menu button
+			if (buttons[1].checkInside(mouseX, mouseY))
+			{
+				choice = 1;
+			}
+			break;
+		}
+	}
+}
+void EndGame()
+{
+	//show back the cursor
+	SDL_ShowCursor(SDL_ENABLE);
+	//SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //set the cursor to center of the window
+
+	//set text positions
+	int textOffset = SCREEN_HEIGHT / 5;
+	int textX = SCREEN_WIDTH / 2;
+	int textY = SCREEN_HEIGHT / 2 - textOffset;
+	//add buttons
+	//yes button
+	int buttonpy = textY + SCREEN_HEIGHT / 5 + 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Retry", regularFont);
+	buttons.push_back(myButton);
+	//no button
+	buttonpy += 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Quit to menu", regularFont);
+	buttons.push_back(myButton);
+	int choice = -1; //0 for retry, 1 for quit to menu
+	while (choice == -1)
+	{
+		mouses = SDL_GetMouseState(&mouseX, &mouseY);
+		handleConfirmEvent(choice);
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_RenderClear(gRenderer);
+		//Render backdrop
+		SDL_RenderCopy(gRenderer, backdrop, NULL, NULL);
+
+		std::string endGameText = "";
+		SDL_Color endGameColor = { 255, 255, 255 };
+		//Render text
+		switch (endGameMode)
+		{
+		case endState::WIN:
+			endGameText = "You win!";
+			endGameColor = { 0, 200, 0 };
+			break;
+		case endState::LOSE:
+			endGameText = "You died!";
+			endGameColor = { 255, 0, 0 };
+			break;
+		}
+		//Render overlay 
+		//Render text
+		drawText(textX, textY, boldFontTitle, endGameColor, endGameText, 1);
+		//Render buttons
+		for (int i = 0; i < buttons.size(); i++)
+		{
+			buttons[i].checkButton(mouses, mouseX, mouseY);
+			buttons[i].render(gRenderer);
+		}
+
+		//Update screen
+		SDL_RenderPresent(gRenderer);
+	}
+	//remove all buttons
+	buttons.clear();
+	clearScreen();
+	StateStruct temp;
+	switch (choice)
+	{
+	case 0: //retry		
+		hideEndGameScreen();
+		initedLevel = false;
+		break;
+	case 1: //quit to menu
+		hideEndGameScreen();
+		showConfirmScreen(confirmState::QUIT_TO_MENU);
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+		break;
+	case 2: //pressed exit
+		hideEndGameScreen();
+		showConfirmScreen(confirmState::QUIT);
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
 	}
 }
 void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType)
@@ -1055,6 +1205,8 @@ void updatePlayer(){
 		myPlayer.hurted=false;
 	}
 	//myPlayer.drawHitbox(camera,gRenderer);
+	if (myPlayer.health <= 0)
+		showEndGamecreen(endState::LOSE);
 }
 void updateWeapon(){
 	cooldown-=1;
@@ -1198,13 +1350,14 @@ void updateEnemy(){
 					droppedWeapon.push_back(Dummy);
 				}
 			enemies.erase(enemies.begin() + i);
+			enemiesCount++;
 			allowSpawning=true;
 		}
 	}
 	myPlayer.attacking=false;
 }
 void spawnEnemy(){
-	while (enemies.size() < MAX_CURRENT_EMEMY + level*10)
+	while (enemies.size() < MAX_CURRENT_EMEMY + level*15)
 		{
 			myEnemy.initEnemy(level);
 			enemies.push_back(myEnemy);
