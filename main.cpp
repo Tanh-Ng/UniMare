@@ -26,7 +26,6 @@ button myButton;
 std::vector<button> buttons;
 bool initedLevel=false;
 bool quit=false;
-bool paused=true;
 bool allowSpawning=false;
 bool pickup=false;
 int level = 0;
@@ -70,6 +69,7 @@ TTF_Font* boldFontTitle;
 TTF_Font* regularFontSmall;
 bool init();
 bool loadMedia();
+void initLevel();
 void clearScreen();
 void handleMenuEvent(int& choice);
 void Menu();
@@ -82,6 +82,9 @@ void hideConfirmScreen();
 bool confirmScreen = false; //flag
 void handleConfirmEvent(int& choice);
 void Game();
+void Pause();
+bool paused = false; //flag
+void handlePauseEvent();
 void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType);
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
@@ -364,6 +367,27 @@ bool loadMedia(){
 	}
 	return success;
 }
+void initLevel(){
+	//clear level objects
+	rocks.clear();
+	enemies.clear();
+	bullets.clear();
+	//objective
+	int level = 0;
+	int enemiesCount = 0;
+	int target = 20;
+	SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	myPlayer.initPlayer();
+	Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
+	createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
+	allowSpawning = true;
+	confirmMode = confirmState::FALSE;
+	paused = false;
+	confirmScreen = false;
+	initedLevel = true;
+	currentSlot=0;
+	cooldown=0;
+}
 void clearScreen()
 {
 	//Clear screen
@@ -627,20 +651,12 @@ void Game()
 	if (!initedLevel)
 	{
 		//init level
-		//initLevel();
-
-		SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-		myPlayer.initPlayer();
-		Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
-		createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
-		allowSpawning = true;
-		initedLevel = true;
-		currentSlot=0;
-		cooldown=0;
+		initLevel();
+		
 	}
 
 	//While application is running
-	while (initedLevel && !quit)
+	while (initedLevel && !quit &&!paused&& !confirmScreen)
 	{
 		//Clear screen
 		SDL_ShowCursor(SDL_DISABLE);
@@ -680,12 +696,133 @@ void Game()
 		
 		SDL_RenderPresent(gRenderer);
 	}
-		if (quit)
+	//get backdrop
+	SDL_Surface* screencap = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	SDL_RenderReadPixels(gRenderer, NULL, SDL_PIXELFORMAT_ARGB8888, screencap->pixels, screencap->pitch);
+	backdrop = SDL_CreateTextureFromSurface(gRenderer, screencap);
+	SDL_FreeSurface(screencap);
+	StateStruct temp;
+	//handle menus
+	if (paused)
+	{
+		temp.StatePointer = Pause;
+		g_StateStack.push(temp);
+	}
+	if (confirmScreen)
+	{
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+	}
+	if (quit)
 	{
 		while (!g_StateStack.empty())
 		{
 			g_StateStack.pop();
 		}
+	}
+}
+void handlePauseEvent()
+{
+	//Poll events
+	while (SDL_PollEvent(&event))
+	{
+		//check events
+		switch (event.type)
+		{
+		case SDL_QUIT: //User hit the X	
+			showConfirmScreen(confirmState::QUIT);
+			break;
+		case SDL_WINDOWEVENT:
+			if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				//resize window
+				SDL_SetWindowSize(gWindow, event.window.data1, event.window.data2);
+				//SCREEN_WIDTH = event.window.data1;
+				//SCREEN_HEIGHT = event.window.data2;
+			}
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_ESCAPE) //esc
+			{
+				paused = false;
+			}
+			break;
+		case SDL_MOUSEBUTTONUP:
+			//resume button
+			if (buttons[0].checkInside(mouseX, mouseY))
+			{
+				paused = false;
+			}
+			//retry button
+			if (buttons[1].checkInside(mouseX, mouseY))
+			{
+				showConfirmScreen(confirmState::RETRY);
+			}
+			//quit to menu button
+			if (buttons[2].checkInside(mouseX, mouseY))
+			{
+				showConfirmScreen(confirmState::QUIT_TO_MENU);
+			}
+			break;
+		}
+	}
+}
+void Pause()
+{
+	//show back the cursor
+	SDL_ShowCursor(SDL_ENABLE);
+	//SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //set the cursor to center of the window
+	//set text positions
+	int pausedOffset = SCREEN_HEIGHT / 3.5;
+	int pausedX = SCREEN_WIDTH / 2;
+	int pausedY = SCREEN_HEIGHT / 2 - pausedOffset;
+	int tipsX = SCREEN_WIDTH / 2;
+	int tipsY = pausedY + SCREEN_HEIGHT / 5;
+	//add buttons
+	//resume button
+	int buttonpy = tipsY + 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Resume", regularFont);
+	buttons.push_back(myButton);
+	//retry button
+	buttonpy += 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Retry", regularFont);
+	buttons.push_back(myButton);
+	//quit to menu button
+	buttonpy += 75;
+	myButton.init(SCREEN_WIDTH / 2, buttonpy, 50, "Quit to menu", regularFont);
+	buttons.push_back(myButton);
+	while (paused && !confirmScreen)
+	{
+		mouses = SDL_GetMouseState(&mouseX, &mouseY);
+		handlePauseEvent();
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+		SDL_RenderClear(gRenderer);
+		//Render backdrop
+		SDL_RenderCopy(gRenderer, backdrop, NULL, NULL);
+		//Render paused text
+		drawText(pausedX, pausedY, boldFontTitle, UIColor, "Paused", 1);
+		//Render buttons
+		for (int i = 0; i < buttons.size(); i++)
+		{
+			buttons[i].checkButton(mouses, mouseX, mouseY);
+			buttons[i].render(gRenderer);
+		}
+		//Update screen
+		SDL_RenderPresent(gRenderer);
+	}
+	//remove all buttons
+	buttons.clear();
+	clearScreen();
+	StateStruct temp;
+	if (confirmScreen)
+	{
+		temp.StatePointer = Confirm;
+		g_StateStack.push(temp);
+	}
+	else
+	{
+		g_StateStack.pop();
 	}
 }
 void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorList, int total, int minSize, int maxSize, int maxType)
@@ -748,7 +885,8 @@ void handleGameEvent(){
 	while(SDL_PollEvent(&event)){
 		switch(event.type){
 			case SDL_QUIT:
-				quit=true;
+				showConfirmScreen(confirmState::QUIT);
+			break;
 				break;
 			case SDL_MOUSEWHEEL:
 				currentSlot=(currentSlot+1)%2;
@@ -759,6 +897,10 @@ void handleGameEvent(){
 			if(event.key.keysym.sym == SDLK_r){
 				myPlayer.reload=true;
 				Weapon[currentSlot].reloadTimer=RELOAD_TIME;
+			}
+			if (event.key.keysym.sym == SDLK_ESCAPE) //esc
+			{
+				paused = true;
 			}
 		}
 		
