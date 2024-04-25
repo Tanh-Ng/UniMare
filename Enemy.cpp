@@ -16,26 +16,27 @@ void enemy::initEnemy(int difficulty)
 	if(type==0){
 		damage = 2 + difficulty;
 		speed = GetRandomFloat(1,3,0.05);
-		health= 50 + difficulty*20;
+		orHealth= 50 + difficulty*20;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==1){
 		damage = 4 + difficulty;
 		speed = GetRandomFloat(3,4,0.05);
-		health = 50 + difficulty*20;
+		orHealth = 50 + difficulty*20;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==2){
 		damage = 4 + difficulty;
 		speed = GetRandomFloat(3,4,0.05);
-		health = 30 + difficulty*20;
+		orHealth = 30 + difficulty*20;
 		attackSpeed= 30 - difficulty*3;
 	}
 	else {
 		damage = 20;
 		speed = GetRandomFloat(4,6,0.05);
-		health = 100 + difficulty*20;
+		orHealth = 100 + difficulty*20;
 	}
+	health=orHealth;
 	currentFrame = 0;
 	currentState = enemyState::WALK;
 	previousState = enemyState::WALK;

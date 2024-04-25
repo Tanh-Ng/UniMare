@@ -10,7 +10,9 @@ LTexture gGroundTexture;
 LTexture gRockTexture;
 LTexture gBulletTexture;
 LTexture gCrosshairTexture;
+LTexture gWhiteTexture;
 LTexture gMenuTexture;
+LTexture gHealthIconTexture;
 SDL_Color UIColor = {0,0,0};
 //backdrop texture used for pause screen
 SDL_Texture* backdrop;
@@ -28,6 +30,7 @@ bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
 bool pickup=false;
+int score = 0;
 int level = 0;
 int enemiesCount = 0;
 int target = 20;
@@ -97,6 +100,10 @@ void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorLi
 void setCamera(SDL_Rect& camera, gameObject target);
 void setPlayerAnimation();
 void updatePlayer();
+void drawUI();
+void drawInfo();
+void drawHealth();
+void drawWeapon();
 void updateWeapon();
 void updateBullet();
 void renderCrosshair();
@@ -337,6 +344,16 @@ bool loadMedia(){
 		printf("Failed to load crosshair texture!\n");
 		success = false;
 	}
+	if (!gWhiteTexture.loadFromFile("IMGfile/white.png"))
+	{
+		printf("Failed to load white texture!\n");
+		success = false;
+	}
+	if (!gHealthIconTexture.loadFromFile("IMGfile/healthIcon.png"))
+	{
+		printf("Failed to load health icon texture!\n");
+		success = false;
+	}
 	//fonts
 	boldFont = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSize);
 	if (boldFont == NULL) {
@@ -472,6 +489,8 @@ void Menu(){
 		SDL_RenderClear(gRenderer);
 		//Render black overlay 
 		gMenuTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gWhiteTexture.setColor(75, 100, 200, 50);
+		gWhiteTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		//Render title
 		drawText(textX, textY, boldFontTitle, UIColor, "UNI MARE!", 1);
 
@@ -698,14 +717,16 @@ void Game()
 				gGroundTexture.render(camera, x * GROUND_TILE_SIZE, y * GROUND_TILE_SIZE, GROUND_TILE_SIZE, GROUND_TILE_SIZE);
 			}
 		}
-		
 		updateWeapon();
 		updateBullet();
 		updatePlayer();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
 		renderCrosshair();
+		drawUI();
 		updateAnimation();
+		gWhiteTexture.setColor(75, 100, 200, 50);
+		gWhiteTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		//Update screen
 		
 		SDL_RenderPresent(gRenderer);
@@ -1129,6 +1150,92 @@ void handleGameInput(){
 			cooldown=Weapon[currentSlot].cd;
 		}
 }
+void drawUI(){
+	drawInfo();
+	drawHealth();
+	drawWeapon();
+}
+void drawInfo(){
+	//draw score
+	int renderedTextWidth;
+	int scoreX = SCREEN_WIDTH - V_BORDER;
+	int scoreY = H_BORDER;
+	renderedTextWidth = drawText(scoreX, scoreY, regularFont, UIColor, std::to_string(int(score)), 2);
+	//draw the text "Score:"
+	int scoreTextX = int(SCREEN_WIDTH - V_BORDER - renderedTextWidth * 1.1);
+	drawText(scoreTextX, scoreY, boldFont, UIColor, "Score: ", 2);
+	//draw "Current level: "
+	int levelText;
+	int levelTextX = V_BORDER*8;
+	int levelTextY = H_BORDER;
+	levelText = drawText(levelTextX, levelTextY, boldFont, UIColor,"Current level: ", 2);
+	int levelX = int(levelText+2*V_BORDER);
+	renderedTextWidth = drawText(levelX, levelTextY, regularFont, UIColor,std::to_string(int(level)), 2);
+	levelText;
+	levelTextY +=H_BORDER*1.3;
+	//draw "target info"
+	drawText(levelTextX, levelTextY, boldFont, UIColor,"Current target: ", 2);
+	drawText(levelX, levelTextY, regularFont, UIColor,std::to_string(int(enemiesCount)), 2);
+	drawText(levelX*1.1, levelTextY, regularFont, UIColor,"/", 2);
+	drawText(levelX*1.1*1.2, levelTextY, regularFont, UIColor,std::to_string(int(target)), 2);
+}
+void drawHealth() {
+	//set health to 0 if it drop below 0
+	if (myPlayer.health < 0)
+	{
+		myPlayer.health = 0;
+	}
+
+	//size of icons
+	int healthBarWidth = map(myPlayer.health, 0, 100, 0, SCREEN_WIDTH / 5); //map player's current health to the health bar width
+	int healthBarHeight = SCREEN_HEIGHT / 100;
+	int healthIconSize = SCREEN_HEIGHT / 20;
+
+	//position of icons
+	int healthBarOffset = SCREEN_HEIGHT / 20;
+	int healthBarX = V_BORDER;
+	int healthBarY = SCREEN_HEIGHT - H_BORDER - healthBarOffset;
+	int healthIconX = int(V_BORDER * 1.25);
+	int healthIconY = healthBarY - healthBarHeight - healthIconSize;
+	int healthX = int(healthIconX + healthIconSize * 1.5);
+	int healthY = healthIconY;
+
+	//draw heath icon
+	gHealthIconTexture.render(healthIconX, healthIconY, healthIconSize, healthIconSize);
+
+	//draw heath
+	drawText(healthX, healthY, boldFont, UIColor, std::to_string(int(myPlayer.health)), 0);
+
+	//draw heath bar
+	gWhiteTexture.setColor(255, 255, 255, 255);
+	gWhiteTexture.render(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+}
+void drawWeapon()
+{
+	if(Weapon[currentSlot].type!=-1){
+	//draw weapon icon
+	int weaponIconSize = SCREEN_HEIGHT / 7;
+	if(Weapon[currentSlot].type==0)
+		weaponIconSize = SCREEN_HEIGHT / 4;
+	int weaponIconX = SCREEN_WIDTH - V_BORDER - weaponIconSize*Weapon[currentSlot].ratio;
+	int weaponIconY = SCREEN_HEIGHT - H_BORDER - weaponIconSize;
+	Weapon[currentSlot].Texture->render(weaponIconX, weaponIconY, weaponIconSize*Weapon[currentSlot].ratio, weaponIconSize,&WeaponClip[myPlayer.currentWeapon][0],0,NULL,SDL_FLIP_NONE);
+	//draw weapon level
+	drawText(weaponIconX, weaponIconY*0.95, boldFont, UIColor,"level:", 2);
+	drawText(weaponIconX*1.02, weaponIconY*0.95, regularFont, UIColor,std::to_string(Weapon[currentSlot].level), 2);
+	//draw current weapon's clip size
+	int renderedTextWidth;
+	int clipSizeX = SCREEN_WIDTH - V_BORDER - weaponIconSize*Weapon[currentSlot].ratio;
+	int clipSizeY = int(SCREEN_HEIGHT - H_BORDER - weaponIconSize / 1.5);
+	int clipSize = Weapon[currentSlot].clipsize;
+	renderedTextWidth = drawText(clipSizeX, clipSizeY, regularFont, UIColor, std::to_string(clipSize), 2);
+	//draw current ammo
+	int currentAmmoX = int(SCREEN_WIDTH - V_BORDER - weaponIconSize*Weapon[currentSlot].ratio - renderedTextWidth * 1.1);
+	int currentAmmoY = int(SCREEN_HEIGHT - H_BORDER - weaponIconSize / 1.5);
+	int currentAmmo = Weapon[currentSlot].Ammo;
+	drawText(currentAmmoX, currentAmmoY, boldFontLarge, UIColor, std::to_string(currentAmmo), 2);
+	}
+}
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
 	std::map<playerState, std::vector <SDL_Rect>>& spritesheetClip, int totalFrame)
 {
@@ -1342,6 +1449,7 @@ void updateEnemy(){
 		enemies[i].render(camera);
 		enemies[i].hurted=false;
 		if(enemies[i].currentState==enemyState::DEAD){
+			score+=enemies[i].orHealth;
 			int odd=GetRandomInt(0,100,1);
 				if(odd%(10-level)==0){
 					Dummy.dropWeapon(enemies[i].rx,enemies[i].ry,level);

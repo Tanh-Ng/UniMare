@@ -44,7 +44,7 @@ void weapon::initWeapon(int temp){
 	if(type == 0){
 		cd=20;
 		ratio = 1;
-		damage= 15;
+		damage= 15+2*level;
 		size = BASE_SIZE*1.5;
 		clipsize=1;
 	}
@@ -53,19 +53,19 @@ void weapon::initWeapon(int temp){
 		reloadTimer=RELOAD_TIME;
 		if(type==1){
 			cd=30;
-			damage=100;
+			damage=30+10*level;
 			clipsize=10;
 			size = BASE_SIZE/2;
 		}
 		else if (type==2){
 			cd=30;
-			damage=50;
+			damage=10+5*level;
 			clipsize=7;
 			size = BASE_SIZE/1.7;
 		}
 		else{
 			cd=10;
-			damage=150;
+			damage=15+3*level;
 			clipsize=30;
 			size = BASE_SIZE/1.5;
 		}
@@ -130,9 +130,9 @@ bool weapon::meleeAtack(float x, float y){
 }
 int weapon::getLevel(int difficulty){
 	float r=GetRandomFloat(0,1,0.05);
-	float base = 0.25;
-	float multiplier = 0.25+0.25*difficulty;
-	for(int i=0 ; i<4;i++){
+	float base = 0.2;
+	float multiplier = 0.2+0.2*difficulty;
+	for(int i=0 ; i<5;i++){
 		if(r<base)
 			return i;
 		base+=multiplier;

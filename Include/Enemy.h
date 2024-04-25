@@ -9,6 +9,7 @@ enum struct enemyState{
 struct enemy: gameObject{
     int damage;
     float speed;
+    int orHealth;
     int health;
     bool hurted;
     int attackSpeed;
