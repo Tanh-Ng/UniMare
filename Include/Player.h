@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 enum struct playerState{
-    IDLE,WALK,DEAD
+    IDLE,WALK,DEAD,RELOAD
 };
 struct player: gameObject{
     int vx,vy;

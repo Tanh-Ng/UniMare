@@ -53,6 +53,7 @@ const int TOTAL_SLOT= 2;
 const int BULLET_SPEED=10;
 const int BULLET_SIZE=20;
 static int SABER_SIZE = BASE_SIZE/2;
+const int CROSSHAIR_SIZE = SCREEN_HEIGHT / 35;
 const double PI = 3.14159265358979323846;
 const SDL_RendererFlip RIGHT = SDL_FLIP_NONE;
 const SDL_RendererFlip LEFT = SDL_FLIP_HORIZONTAL;

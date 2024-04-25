@@ -51,22 +51,22 @@ void weapon::initWeapon(int temp){
 		if(type==1){
 			cd=30;
 			damage=50;
-			clipsize=5;
+			clipsize=7;
 			size = BASE_SIZE/1.7;
 		}
 		else if (type==2){
 			cd=30;
 			damage=100;
-			clipsize=5;
+			clipsize=10;
 			size = BASE_SIZE/2;
 		}
 		else{
 			cd=10;
 			damage=150;
-			clipsize=5;
+			clipsize=30;
 			size = BASE_SIZE/1.5;
 		}
-
+		Ammo=clipsize;
 	}
 
 }

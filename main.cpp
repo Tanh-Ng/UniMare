@@ -8,6 +8,7 @@ SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
 LTexture gRockTexture;
 LTexture gBulletTexture;
+LTexture gCrosshairTexture;
 SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 //event handler
 SDL_Event event;
@@ -55,6 +56,7 @@ void setPlayerAnimation();
 void updatePlayer();
 void updateWeapon();
 void updateBullet();
+void renderCrosshair();
 void spawnEnemy();
 void updateEnemy();
 void updateAnimation();
@@ -276,6 +278,11 @@ bool loadMedia(){
 		printf("Failed to load bullet texture!\n");
 		success = false;
 	}
+	if (!gCrosshairTexture.loadFromFile("IMGfile/crosshair.png"))
+	{
+		printf("Failed to load crosshair texture!\n");
+		success = false;
+	}
 	return success;
 }
 void Game()
@@ -284,6 +291,7 @@ void Game()
 	{
 		//init level
 		//initLevel();
+
 		SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 		myPlayer.initPlayer();
 		Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
@@ -298,6 +306,7 @@ void Game()
 	while (initedLevel && !quit)
 	{
 		//Clear screen
+		SDL_ShowCursor(SDL_DISABLE);
 		pickup=false;
 		myPlayer.previousState = myPlayer.currentState;
 		myPlayer.currentWeapon= Weapon[currentSlot].type;
@@ -322,11 +331,13 @@ void Game()
 				gGroundTexture.render(camera, x * GROUND_TILE_SIZE, y * GROUND_TILE_SIZE, GROUND_TILE_SIZE, GROUND_TILE_SIZE);
 			}
 		}
+		
 		updateWeapon();
 		updateBullet();
 		updatePlayer();
 		renderGameObject(camera, gRockTexture,rocks, gRockClips);
 		updateEnemy();
+		renderCrosshair();
 		updateAnimation();
 		//Update screen
 		
@@ -717,4 +728,16 @@ void updateAnimation(){
 			Weapon[currentSlot].currentState= weaponState::NONE;
 		}
 	}
+}
+void renderCrosshair()
+{
+	if (myPlayer.currentState == playerState::RELOAD||Weapon[currentSlot].Ammo == 0 )
+	{
+		gCrosshairTexture.setColor(150, 150, 150);
+	}
+	else
+	{
+		gCrosshairTexture.setColor(255, 255, 255);
+	}
+	gCrosshairTexture.render(mouseX + CROSSHAIR_SIZE / 2, mouseY + CROSSHAIR_SIZE / 2, CROSSHAIR_SIZE, CROSSHAIR_SIZE);
 }
