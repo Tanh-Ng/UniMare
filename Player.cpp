@@ -10,6 +10,7 @@ player::player()
 	previousState = playerState::IDLE;
 	direction = RIGHT;
 	attacking =false;
+	reload=false;
 }
 void player::initPlayer()
 {
@@ -23,6 +24,7 @@ void player::initPlayer()
 	previousState = playerState::IDLE;
 	direction = RIGHT;
 	attacking = false;
+	reload = false;
 }
 void player::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {

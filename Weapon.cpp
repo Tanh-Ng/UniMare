@@ -44,10 +44,11 @@ void weapon::initWeapon(int temp){
 		ratio = 1;
 		damage= 100;
 		size = BASE_SIZE*1.5;
+		clipsize=1;
 	}
 	else{
 		ratio = 1.783;
-		
+		reloadTimer=RELOAD_TIME;
 		if(type==1){
 			cd=30;
 			damage=50;
@@ -66,9 +67,8 @@ void weapon::initWeapon(int temp){
 			clipsize=30;
 			size = BASE_SIZE/1.5;
 		}
-		Ammo=clipsize;
 	}
-
+	Ammo=clipsize;
 }
 void weapon::render(SDL_Rect& camera)
 {	

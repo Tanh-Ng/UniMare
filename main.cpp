@@ -406,6 +406,10 @@ void handleGameEvent(){
 			case SDL_KEYDOWN:
 			if (event.key.keysym.sym == SDLK_f)
 				pickup=true;
+			if(event.key.keysym.sym == SDLK_r){
+				myPlayer.reload=true;
+				Weapon[currentSlot].reloadTimer=RELOAD_TIME;
+			}
 		}
 		
 	}
@@ -463,23 +467,24 @@ void handleGameInput(){
 		if (keys[SDL_SCANCODE_F]&&!pickup){
 			pickup=true;
 		}
-		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&myPlayer.attacking==false&&cooldown==0){
-			Weapon[currentSlot].currentState= weaponState::ATTACK;
+		if (mouses & SDL_BUTTON(SDL_BUTTON_LEFT)&&myPlayer.attacking==false&&cooldown==0&&Weapon[currentSlot].Ammo>0){
+			Weapon[currentSlot].currentState=weaponState::ATTACK;
 			myPlayer.attacking=true;
+			myPlayer.reload=false;
 			if(Weapon[currentSlot].type>=2){
+				Weapon[currentSlot].Ammo--;
 				int acc=GetRandomFloat(-17,15,3);
 				bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,acc);
 				bullets.push_back(myBullet);
 			}
 			else if(Weapon[currentSlot].type==1){
+				Weapon[currentSlot].Ammo--;
 				for(int i=-20;i<30;i+=10){
 					bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,i);
 					bullets.push_back(myBullet);
 				}
 			}
-			
 			cooldown=Weapon[currentSlot].cd;
-			
 		}
 }
 void loadSpritesheet(enum playerState state, std::map<playerState, LTexture>& spritesheet,
@@ -562,6 +567,12 @@ void updatePlayer(){
 void updateWeapon(){
 	cooldown-=1;
 	if(cooldown<=0)	cooldown=0;
+	if(myPlayer.reload){
+			if(Weapon[currentSlot].reloadTimer--==0){
+				Weapon[currentSlot].Ammo=Weapon[currentSlot].clipsize;
+				myPlayer.reload=false;
+			}
+	}
 	Weapon[currentSlot].px = myPlayer.px+Weapon[currentSlot].size/2.5;
 	Weapon[currentSlot].py = myPlayer.py+Weapon[currentSlot].size/4.5;
 	Weapon[currentSlot].calRotation(camera, mouseX, mouseY);
@@ -667,7 +678,6 @@ void updateEnemy(){
 		if(enemies[i].attackTimer--<=0)
 			enemies[i].attackTimer=0;
 		if(enemies[i].currentState!=enemyState::DEAD&&enemies[i].checkCollision(myPlayer,3)&&enemies[i].attackTimer==0){
-					std::cout<<"hi";
 					myPlayer.hurt(enemies[i].damage);
 					enemies[i].attackTimer=enemies[i].attackSpeed;
 					if(enemies[i].type==3)
@@ -731,7 +741,7 @@ void updateAnimation(){
 }
 void renderCrosshair()
 {
-	if (myPlayer.currentState == playerState::RELOAD||Weapon[currentSlot].Ammo == 0 )
+	if (myPlayer.reload||Weapon[currentSlot].Ammo == 0 )
 	{
 		gCrosshairTexture.setColor(150, 150, 150);
 	}

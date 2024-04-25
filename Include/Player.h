@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 enum struct playerState{
-    IDLE,WALK,DEAD,RELOAD
+    IDLE,WALK,DEAD
 };
 struct player: gameObject{
     int vx,vy;
@@ -9,6 +9,7 @@ struct player: gameObject{
     int currentWeapon;
     bool hurted;
     bool attacking;
+    bool reload;
     float speed;
     SDL_RendererFlip direction;
     playerState currentState;

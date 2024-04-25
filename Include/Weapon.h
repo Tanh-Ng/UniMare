@@ -10,6 +10,7 @@ struct weapon : gameObject{
     float damage;
     double ratio = 1;
     int clipsize;
+    int reloadTimer;
     int Ammo;
     SDL_Point centerPoint;
     SDL_Rect meleeHitbox;
