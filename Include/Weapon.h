@@ -20,13 +20,15 @@ struct weapon : gameObject{
 	int currentFrame;
     LTexture* Texture;
     SDL_Rect* currentClip;
+    int level;
     void initWeapon(int temp);
-    void dropWeapon(float x,float y);
+    void dropWeapon(float x,float y,int difficulty);
     void setAnimation(LTexture& targetTexture,SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
     void calRotation(SDL_Rect& camera, int x, int y);
     void getHitbox();
     bool meleeAtack(float px,float py);
+    int getLevel(int difficulty);
 };
 struct bullet : gameObject
 {

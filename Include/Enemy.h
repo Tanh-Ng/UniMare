@@ -20,7 +20,7 @@ struct enemy: gameObject{
 	SDL_Rect* currentClip;
 	int currentFrame;
     enemy();  
-    void initEnemy();
+    void initEnemy(int difficulty);
     void setAnimation(LTexture& targetTexture, SDL_Rect& targetClip);
     void render(SDL_Rect& camera);
     void move(gameObject player,std::vector<gameObject> rocks);

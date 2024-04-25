@@ -21,6 +21,8 @@ bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
 bool pickup=false;
+int level = 3;
+int enemiesCount = 0;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation
@@ -34,7 +36,6 @@ std::vector<std::map<enemyState, LTexture>> gEnemyTexture(4);
 std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
 std::vector<enemy> enemies;
 //rocks 
-const int ROCKS_CLIP=3;
 gameObject rock;
 std::vector <SDL_Rect> gRockClips;
 std::vector<gameObject> rocks;
@@ -246,23 +247,23 @@ bool loadMedia(){
 	{
 		loadClips(WeaponTexture[0], WeaponClip[0], WEAPON_CLIP);
 	}
-	if (!WeaponTexture[1].loadFromFile("IMGfile/shotgun.png"))
+	if (!WeaponTexture[2].loadFromFile("IMGfile/shotgun.png"))
 	{
 		printf("Failed to load shotgun texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(WeaponTexture[1], WeaponClip[1], WEAPON_CLIP);
+		loadClips(WeaponTexture[2], WeaponClip[2], WEAPON_CLIP);
 	}
-	if (!WeaponTexture[2].loadFromFile("IMGfile/pistol.png"))
+	if (!WeaponTexture[1].loadFromFile("IMGfile/pistol.png"))
 	{
 		printf("Failed to load pistol texture!\n");
 		success = false;
 	}
 	else
 	{
-		loadClips(WeaponTexture[2], WeaponClip[2], WEAPON_CLIP);
+		loadClips(WeaponTexture[1], WeaponClip[1], WEAPON_CLIP);
 	}
 	if (!WeaponTexture[3].loadFromFile("IMGfile/rifle.png"))
 	{
@@ -471,13 +472,13 @@ void handleGameInput(){
 			Weapon[currentSlot].currentState=weaponState::ATTACK;
 			myPlayer.attacking=true;
 			myPlayer.reload=false;
-			if(Weapon[currentSlot].type>=2){
+			if(Weapon[currentSlot].type!=2&&Weapon[currentSlot].type>0){
 				Weapon[currentSlot].Ammo--;
 				int acc=GetRandomFloat(-17,15,3);
 				bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,acc);
 				bullets.push_back(myBullet);
 			}
-			else if(Weapon[currentSlot].type==1){
+			else if(Weapon[currentSlot].type==2){
 				Weapon[currentSlot].Ammo--;
 				for(int i=-20;i<30;i+=10){
 					bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,i);
@@ -639,13 +640,13 @@ void updateBullet()
 					if (enemies[j].health < 0)
 					{
 						int odd=GetRandomInt(0,100,1);
-						if(odd%2==0){
-							Dummy.dropWeapon(enemies[j].rx,enemies[j].ry);
+						if(odd%(10-level)==0){
+							Dummy.dropWeapon(enemies[j].rx,enemies[j].ry,level);
 							Dummy.Texture=&WeaponTexture[Dummy.type];
 							Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
 							droppedWeapon.push_back(Dummy);
 						}
-						enemies.erase(enemies.begin() + j);
+						enemies[j].currentState=enemyState::DEAD;
 					}
 					break;
 				}
@@ -677,7 +678,7 @@ void updateEnemy(){
 	for(int i = 0 ; i < enemies.size();i++){
 		if(enemies[i].attackTimer--<=0)
 			enemies[i].attackTimer=0;
-		if(enemies[i].currentState!=enemyState::DEAD&&enemies[i].checkCollision(myPlayer,3)&&enemies[i].attackTimer==0){
+		if(enemies[i].currentState!=enemyState::DEAD&&enemies[i].checkCollision(myPlayer,1.5)&&enemies[i].attackTimer==0){
 					myPlayer.hurt(enemies[i].damage);
 					enemies[i].attackTimer=enemies[i].attackSpeed;
 					if(enemies[i].type==3)
@@ -690,13 +691,6 @@ void updateEnemy(){
 				}
 				if(enemies[i].health<=0){
 						enemies[i].currentState=enemyState::DEAD;
-						int odd=GetRandomInt(0,100,1);
-						if(odd%2==0){
-							Dummy.dropWeapon(enemies[i].rx,enemies[i].ry);
-							Dummy.Texture=&WeaponTexture[Dummy.type];
-							Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
-							droppedWeapon.push_back(Dummy);
-						}
 					}
 			}
 		}
@@ -704,15 +698,24 @@ void updateEnemy(){
 		enemies[i].move(myPlayer,rocks);
 		enemies[i].render(camera);
 		enemies[i].hurted=false;
-		if(enemies[i].currentState==enemyState::DEAD)
+		if(enemies[i].currentState==enemyState::DEAD){
+			int odd=GetRandomInt(0,100,1);
+				if(odd%(10-level)==0){
+					Dummy.dropWeapon(enemies[i].rx,enemies[i].ry,level);
+					Dummy.Texture=&WeaponTexture[Dummy.type];
+					Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
+					droppedWeapon.push_back(Dummy);
+				}
 			enemies.erase(enemies.begin() + i);
+			allowSpawning=true;
+		}
 	}
 	myPlayer.attacking=false;
 }
 void spawnEnemy(){
-	while (enemies.size() < MAX_CURRENT_EMEMY )
+	while (enemies.size() < MAX_CURRENT_EMEMY + level*10)
 		{
-			myEnemy.initEnemy();
+			myEnemy.initEnemy(level);
 			enemies.push_back(myEnemy);
 		}
 		allowSpawning = false;

@@ -4,37 +4,37 @@ enemy::enemy()
     size = PLAYER_SIZE;
 	hurted=false;	
 }
-void enemy::initEnemy()
+void enemy::initEnemy(int difficulty)
 {
 	hurted=false;
 	int randomX = GetRandomInt(size, LEVEL_WIDTH - size, 1);
 	int randomY = GetRandomInt(size, LEVEL_HEIGHT - size, 1);
 	setPosition(randomX, randomY);
 	setRenderPosition(px, py);
-	type = GetRandomInt(0,3,1);
+	type = GetRandomInt(0,difficulty,1);
 	attackTimer=0;
 	if(type==0){
-		damage = 5;
+		damage = 2 + difficulty;
 		speed = GetRandomFloat(1,3,0.05);
-		health= 200;
-		attackSpeed=40;
+		health= 50 + difficulty*20;
+		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==1){
-		damage = 10;
+		damage = 4 + difficulty;
 		speed = GetRandomFloat(3,4,0.05);
-		health = 200;
-		attackSpeed=40;
+		health = 50 + difficulty*20;
+		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==2){
-		damage = 5;
+		damage = 4 + difficulty;
 		speed = GetRandomFloat(3,4,0.05);
-		health = 200;
-		attackSpeed=30;
+		health = 30 + difficulty*20;
+		attackSpeed= 30 - difficulty*3;
 	}
 	else {
-		damage = 5;
+		damage = 20;
 		speed = GetRandomFloat(4,6,0.05);
-		health = 200;
+		health = 100 + difficulty*20;
 	}
 	currentFrame = 0;
 	currentState = enemyState::WALK;

@@ -13,7 +13,22 @@ LTexture::~LTexture()
 	//Deallocate
 	free();
 }
+LTexture::LTexture(const LTexture& other) {
+    // Copy the image dimensions
+    mWidth = other.mWidth;
+    mHeight = other.mHeight;
 
+    // Allocate memory for the new texture
+    mTexture = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, mWidth, mHeight);
+
+    // Set the blend mode of the new texture
+    SDL_SetTextureBlendMode(mTexture, SDL_BLENDMODE_BLEND);
+
+    // Render the other texture onto the new texture
+    SDL_SetRenderTarget(gRenderer, mTexture);
+    SDL_RenderCopy(gRenderer, other.mTexture, NULL, NULL);
+    SDL_SetRenderTarget(gRenderer, NULL);
+}
 bool LTexture::loadFromFile(std::string path)
 {
 	//Get rid of preexisting texture

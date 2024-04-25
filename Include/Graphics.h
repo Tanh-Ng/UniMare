@@ -7,7 +7,8 @@ struct LTexture
 
 	//Deallocates memory
 	~LTexture();
-
+	//copy
+	LTexture(const LTexture& other);
 	//Loads image at specified path
 	bool loadFromFile(std::string path);
 	//Deallocates texture
