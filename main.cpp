@@ -690,7 +690,9 @@ void Game()
 			level++;
 			target=20+level*20;
 			enemiesCount=0;
-
+			droppedWeapon.clear();
+			enemies.clear();
+			allowSpawning=true;
 		}
 		SDL_ShowCursor(SDL_DISABLE);
 		pickup=false;
@@ -1024,12 +1026,25 @@ void createGameObjectRandom(gameObject source, std::vector<gameObject>& vectorLi
 	}
 }
 void close(){
+	//free texture
+	gBulletTexture.free();
+	gCrosshairTexture.free();
+	gWhiteTexture.free();
+	gMenuTexture.free();
+	gHealthIconTexture.free();
 	gGroundTexture.free();
 	gRockTexture.free();
+	//destroy window
+	SDL_DestroyTexture(backdrop);
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
 	gRenderer = NULL;
+	//vector clear
+	droppedWeapon.clear();
+	enemies.clear();
+	rocks.clear();
+	bullet.clear();
 		//Free fonts
 	TTF_CloseFont(boldFont);
 	boldFont = NULL;
@@ -1043,6 +1058,7 @@ void close(){
 	regularFont = NULL;
 	TTF_CloseFont(regularFontSmall);
 	regularFontSmall = NULL;
+
 	IMG_Quit();
 	SDL_Quit();
 	g_StateStack.swap(emptyStack);
