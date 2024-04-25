@@ -20,7 +20,7 @@ struct weapon : gameObject{
 	int currentFrame;
     LTexture* Texture;
     SDL_Rect* currentClip;
-    int level;
+    int level=0;
     void initWeapon(int temp);
     void dropWeapon(float x,float y,int difficulty);
     void setAnimation(LTexture& targetTexture,SDL_Rect& targetClip);

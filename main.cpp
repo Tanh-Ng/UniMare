@@ -21,8 +21,9 @@ bool initedLevel=false;
 bool quit=false;
 bool allowSpawning=false;
 bool pickup=false;
-int level = 3;
+int level = 0;
 int enemiesCount = 0;
+int target = 20;
 std::stack<StateStruct> g_StateStack;
 std::stack<StateStruct> emptyStack; //for clearing stack
 //player animation

@@ -30,6 +30,7 @@ weapon::weapon(){
     previousState = weaponState::NONE;
     currentFrame = 0;
     rotation = 0;
+	level=0;
 }
 void weapon::dropWeapon(float x,float y,int difficulty){
 	rx=x;
