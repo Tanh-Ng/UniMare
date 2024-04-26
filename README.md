@@ -158,6 +158,6 @@ Có 4 loại vũ khí, lần lượt theo thứ tự có thể nhặt đượ
 - Main.cpp: Chứa hàm main() của game và các hàm xung quanh xử lý game.
 
 #### Nguồn và cảm hứng.
--https://rgsdev.itch.io/ (sử dụng hình ảnh nhân vật, vũ khí và hình nền)
--https://pixabay.com/vi/sound-effects/ (sử dụng âm thanh) 
+-https://rgsdev.itch.io/ (sử dụng hình ảnh nhân vật, vũ khí và hình nền)<br/>
+-https://pixabay.com/vi/sound-effects/ (sử dụng âm thanh) <br/>
 -https://fonts.google.com/specimen/Open+Sans (sử dụng phông chữ)
