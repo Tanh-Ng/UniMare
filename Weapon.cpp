@@ -140,7 +140,7 @@ bool weapon::meleeAtack(float x, float y){
 int weapon::getLevel(int difficulty){
 	float r=GetRandomFloat(0,1,0.05);
 	float base = 0.2;
-	float multiplier = 0.3-0.05*difficulty;
+	float multiplier = 0.4-0.05*difficulty;
 	for(int i=0 ; i<5;i++){
 		if(r<base)
 			return i;

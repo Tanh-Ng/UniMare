@@ -29,7 +29,7 @@ void audioManager::loadAudio()
 		exit(1);
 	}
 
-	reload = Mix_LoadWAV("Sound/reload.wav");
+	reload = Mix_LoadWAV("Sound/reload.mp3");
 	if (reload == NULL)
 	{
 		printf("Failed to load reload sound effect! SDL_mixer Error: %s\n", Mix_GetError());
@@ -62,7 +62,7 @@ void audioManager::loadAudio()
 		printf("Failed to load game win effect! SDL_mixer Error: %s\n", Mix_GetError());
 		exit(1);
 	}
-	gunshot = Mix_LoadWAV("Sound/gun empty.wav");
+	gunshot = Mix_LoadWAV("Sound/shooting.mp3");
 	if (gunshot == NULL)
 	{
 		printf("Failed to load gun shot sound effect! SDL_mixer Error: %s\n", Mix_GetError());
@@ -74,13 +74,13 @@ void audioManager::loadAudio()
 		printf("Failed to load saber swing sound effect! SDL_mixer Error: %s\n", Mix_GetError());
 		exit(1);
 	}
-	playerHurt == Mix_LoadWAV("Sound/hurt.mp3");
+	playerHurt = Mix_LoadWAV("Sound/hurt.mp3");
 	if (playerHurt == NULL)
 	{
 		printf("Failed to load hurt sound effect! SDL_mixer Error: %s\n", Mix_GetError());
 		exit(1);
 	}
-	hitEnemy == Mix_LoadWAV("Sound/bullethit.mp3");
+	hitEnemy = Mix_LoadWAV("Sound/bullethit.mp3");
 	if (playerHurt == NULL)
 	{
 		printf("Failed to load bullet hit sound effect! SDL_mixer Error: %s\n", Mix_GetError());

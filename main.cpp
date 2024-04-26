@@ -4,6 +4,7 @@
 #include "Include/Enemy.h"
 #include "Include/Weapon.h"
 #include "Include/Button.h"
+#include "Include/Audio.h"
 SDL_Window* gWindow=NULL;
 SDL_Renderer* gRenderer=NULL;
 LTexture gGroundTexture;
@@ -41,6 +42,8 @@ player myPlayer;
 const int ANIMATION_FRAMES=18;
 std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
+// audio
+audioManager myAudio;
 //enemy animation
 enemy myEnemy;
 int boss=0;
@@ -204,6 +207,12 @@ int main(int argc, char* argv[])
 					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 					success = false;
 				}
+					if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 2048) < 0)
+				{
+					printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+					success = false;
+				}
+				Mix_AllocateChannels(48); //allocate audio channels
 			}
 		}
 	}
@@ -358,6 +367,8 @@ bool loadMedia(){
 		printf("Failed to load health icon texture!\n");
 		success = false;
 	}
+	//Load audio
+	myAudio.loadAudio();
 	//fonts
 	boldFont = TTF_OpenFont("Font/OpenSans-Bold.ttf", fontSize);
 	if (boldFont == NULL) {
@@ -916,6 +927,7 @@ void handleEndGameEvent(int& choice)
 			break;
 		case SDL_KEYDOWN:
 			break;
+		
 		case SDL_MOUSEBUTTONUP:
 			//retry button
 			if (buttons[0].checkInside(mouseX, mouseY))
@@ -935,8 +947,17 @@ void EndGame()
 {
 	//show back the cursor
 	SDL_ShowCursor(SDL_ENABLE);
+	Mix_Pause(-1);
 	//SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); //set the cursor to center of the window
-
+	switch (endGameMode)
+		{
+		case endState::WIN:
+			myAudio.playGameWin();
+			break;
+		case endState::LOSE:
+			myAudio.playGameLose();
+			break;
+		}
 	//set text positions
 	int textOffset = SCREEN_HEIGHT / 5;
 	int textX = SCREEN_WIDTH / 2;
@@ -1072,7 +1093,8 @@ void close(){
 	regularFont = NULL;
 	TTF_CloseFont(regularFontSmall);
 	regularFontSmall = NULL;
-
+	myAudio.freeAudio();
+	Mix_Quit();
 	IMG_Quit();
 	SDL_Quit();
 	g_StateStack.swap(emptyStack);
@@ -1091,10 +1113,21 @@ void handleGameEvent(){
 				break;
 			case SDL_MOUSEWHEEL:
 				currentSlot=(currentSlot+1)%2;
+				myAudio.playSwapWeapon();
+			case SDL_MOUSEBUTTONDOWN:
+			if (Weapon[currentSlot].Ammo==0)
+			{
+				myAudio.playGunEmpty();
+			}
+			else {
 				
+			}
+			break;
 			case SDL_KEYDOWN:
-			if (event.key.keysym.sym == SDLK_f)
+			if (event.key.keysym.sym == SDLK_f){
+				myAudio.playCollectObject();
 				pickup=true;
+			}
 			if(event.key.keysym.sym == SDLK_r){
 				myPlayer.reload=true;
 				Weapon[currentSlot].reloadTimer=RELOAD_TIME;
@@ -1164,13 +1197,17 @@ void handleGameInput(){
 			Weapon[currentSlot].currentState=weaponState::ATTACK;
 			myPlayer.attacking=true;
 			myPlayer.reload=false;
+			if(Weapon[currentSlot].type==0)
+				myAudio.playSaberswing();
 			if(Weapon[currentSlot].type!=2&&Weapon[currentSlot].type>0){
+				myAudio.playGunshot();
 				Weapon[currentSlot].Ammo--;
 				int acc=GetRandomFloat(-17,15,3);
 				bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,acc);
 				bullets.push_back(myBullet);
 			}
 			else if(Weapon[currentSlot].type==2){
+				myAudio.playGunshot();
 				Weapon[currentSlot].Ammo--;
 				for(int i=-20;i<30;i+=10){
 					bullet myBullet(camera, Weapon[currentSlot], mouseX, mouseY,i);
@@ -1435,6 +1472,7 @@ void updateBullet()
 			//delete current bullet if it's collided with something
 			if (collised)
 			{
+				myAudio.playHitEnemy();
 				bullets.erase(bullets.begin() + i);
 			}
 			else
@@ -1460,6 +1498,7 @@ void updateEnemy(){
 			enemies[i].attackTimer=0;
 		if(enemies[i].currentState!=enemyState::DEAD&&enemies[i].checkCollision(myPlayer,1.5)&&enemies[i].attackTimer==0){
 					myPlayer.hurt(enemies[i].damage);
+					myAudio.playPlayerHurt();
 					enemies[i].attackTimer=enemies[i].attackSpeed;
 					if(enemies[i].type==3)
 						enemies[i].currentState=enemyState::DEAD;
