@@ -24,10 +24,7 @@ UNI MARE là tựa game bắn súng top-down. Lấy bối cảnh cuộc c
 
 ## a. Cách 1: Không bao gồm code.
 
-Tải game (được nén thành .zip) tại link
-sau: https://github.com/nmhienbn/PVZ-Kaito-NMH-Edition/releases/tag/published<br/>
-Cách này tiết kiệm bộ nhớ và thời gian tải đi rất nhiều (khoảng 103MB).<br/>
-Giải nén game vào một thư mục và bật pvz.exe lên và chơi.<br/>
+
 
 ## b. Cách 2: Bao gồm code và có thể biên dịch.
 
@@ -51,7 +48,7 @@ Một số chú ý: <br/>
 
 **Bước 4:** Mở cmd trong thư mục chứa Makefile và gõ lệnh make.
 
-**Bước 5:** Bật pvz.exe và chơi
+**Bước 5:** Bật Unimare.exe và chơi
 
 # 1. Bắt đầu game
 
@@ -76,7 +73,7 @@ Khi bắt đầu game người chơi sẽ ngay lập tức nhận được vu�
 
 ## a. Các vật cản và đồ rơi.
 -    Rock (đá)
-      : là địa hình của mặt trăng, chúng là vật cản duy nhất bạn có thể tận dụng để tiêu diệt bọn nightmare vì rock sẽ ngăn không cho người chơi và nightmare di chuyển qua (trừ nightmare type2).
+      : là địa hình của mặt trăng, chúng là vật cản duy nhất bạn có thể tận dụng để tiêu diệt bọn nightmare vì rock sẽ ngăn không cho người chơi và nightmare di chuyển qua (trừ nightmare type2).<br/>
      Dropped Weapon (vũ khí rơi)
       : là vũ khí rơi ra khi bạn tiêu diệt các nightmare có thể nhặt lên sử dụng, tùy vào từng cấp độ, vũ khí rơi ra sẽ có nhiều loại và cấp độ khác nhau.
 ## b. Game UI
