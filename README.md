@@ -57,7 +57,6 @@ Một số chú ý: <br/>
 
 ![image](IMGfile/Preview/Menu.png)
 
-</div>
 
 Khi bắt đầu game người chơi sẽ ngay lập tức nhận được vũ khí khởi đầu - Lightsaber
 <div style="text-align: center;">

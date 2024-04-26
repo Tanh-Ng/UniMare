@@ -43,6 +43,9 @@ std::map<playerState, LTexture> gPlayerTexture;
 std::map<playerState, std::vector <SDL_Rect>> gPlayerClips;
 //enemy animation
 enemy myEnemy;
+int boss=0;
+int wait;
+int timer;
 std::vector<std::map<enemyState, LTexture>> gEnemyTexture(4);
 std::map<enemyState, std::vector <SDL_Rect>> gEnemyClips;
 std::vector<enemy> enemies;
@@ -108,6 +111,7 @@ void updateWeapon();
 void updateBullet();
 void renderCrosshair();
 void spawnEnemy();
+void updateBoss();
 void updateEnemy();
 void updateAnimation();
 void handleGameEvent();
@@ -398,9 +402,14 @@ void initLevel(){
 	enemies.clear();
 	bullets.clear();
 	//objective
-	int level = 0;
-	int enemiesCount = 0;
-	int target = 20;
+	enemy myEnemy;
+	wait=0;
+	level = 0;
+	enemiesCount = 0;
+	target = 20;
+	boss=0;
+	timer=1500;
+	score=0;
 	SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 	myPlayer.initPlayer();
 	Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
@@ -555,6 +564,8 @@ void Confirm()
 		SDL_RenderClear(gRenderer);
 		//Render backdrop
 		SDL_RenderCopy(gRenderer, backdrop, NULL, NULL);
+		gWhiteTexture.setColor(75, 100, 200, 50);
+		gWhiteTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		std::string confirmText = "";
 		//Render text
 		switch (confirmMode)
@@ -727,6 +738,8 @@ void Game()
 		renderCrosshair();
 		drawUI();
 		updateAnimation();
+		if(level==4)
+			updateBoss();
 		gWhiteTexture.setColor(75, 100, 200, 50);
 		gWhiteTexture.render(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		//Update screen
@@ -965,6 +978,7 @@ void EndGame()
 		//Render overlay 
 		//Render text
 		drawText(textX, textY, boldFontTitle, endGameColor, endGameText, 1);
+		drawText(textX, textY*1.4, boldFontTitle, endGameColor,  std::to_string(int(score)), 1);
 		//Render buttons
 		for (int i = 0; i < buttons.size(); i++)
 		{
@@ -1473,6 +1487,9 @@ void updateEnemy(){
 					Dummy.currentClip=&WeaponClip[Dummy.type][Dummy.currentFrame];
 					droppedWeapon.push_back(Dummy);
 				}
+			if(enemies[i].isBoss){
+				showEndGamecreen(endState::WIN);
+			}
 			enemies.erase(enemies.begin() + i);
 			enemiesCount++;
 			allowSpawning=true;
@@ -1481,12 +1498,35 @@ void updateEnemy(){
 	myPlayer.attacking=false;
 }
 void spawnEnemy(){
-	while (enemies.size() < MAX_CURRENT_EMEMY + level*15)
+	while (enemies.size() < MAX_CURRENT_EMEMY + level*10)
 		{
 			myEnemy.initEnemy(level);
 			enemies.push_back(myEnemy);
 		}
 		allowSpawning = false;
+}
+void updateBoss(){
+	if(boss==0){
+		boss=1;
+		enemy Boss;
+		Boss.isBoss=true;
+		Boss.initEnemy(38);
+		Boss.size=myEnemy.size*3;
+		enemies.push_back(Boss);
+		timer = 500;
+	}
+	wait++;
+	if(wait==10){
+		wait=0;
+		timer--;
+	}
+	int timerX = SCREEN_WIDTH/2;
+	int timerY = H_BORDER;
+	drawText(timerX, timerY, boldFont, UIColor, "Timer left:", 1);
+	drawText(timerX*1.2, timerY, regularFont, UIColor,  std::to_string(int(timer)), 1);
+	if(timer==0&&boss==1){
+		showEndGamecreen(endState::LOSE);
+	}
 }
 void updateAnimation(){
 	myPlayer.currentFrame++;

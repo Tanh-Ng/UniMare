@@ -44,7 +44,7 @@ void weapon::initWeapon(int temp){
 	if(type == 0){
 		cd=20;
 		ratio = 1;
-		damage= 15+2*level;
+		damage= 15+5*level;
 		size = BASE_SIZE*1.8;
 		clipsize=1;
 	}
@@ -53,19 +53,19 @@ void weapon::initWeapon(int temp){
 		reloadTimer=RELOAD_TIME;
 		if(type==1){
 			cd=30;
-			damage=30+10*level;
+			damage=30+15*level;
 			clipsize=10;
 			size = BASE_SIZE/2;
 		}
 		else if (type==2){
 			cd=30;
-			damage=10+5*level;
+			damage=10+10*level;
 			clipsize=7;
 			size = BASE_SIZE/1.7;
 		}
 		else{
 			cd=10;
-			damage=15+3*level;
+			damage=15+7*level;
 			clipsize=30;
 			size = BASE_SIZE/1.5;
 		}
@@ -74,8 +74,17 @@ void weapon::initWeapon(int temp){
 }
 void weapon::render(SDL_Rect& camera)
 {	
+	if(level==1)
+		Texture->setColor(0,255,0,155);
+	if(level==2)
+		Texture->setColor(255,0,255,155);
+	if(level==3)
+		Texture->setColor(255,0,0,155);
+	if(level==4)
+		Texture->setColor(0,255,255,155);
 	if(Texture!=NULL)
 		Texture->render(rx - camera.x,ry - camera.y,size*ratio, size,currentClip,rotation,&centerPoint,direction);
+	Texture->setColor(255,255,255,255);
 }
 void weapon::setAnimation(LTexture& targetTexture, SDL_Rect& targetClip)
 {
@@ -131,11 +140,11 @@ bool weapon::meleeAtack(float x, float y){
 int weapon::getLevel(int difficulty){
 	float r=GetRandomFloat(0,1,0.05);
 	float base = 0.2;
-	float multiplier = 0.2+0.2*difficulty;
+	float multiplier = 0.3-0.05*difficulty;
 	for(int i=0 ; i<5;i++){
 		if(r<base)
 			return i;
 		base+=multiplier;
 	}
-	return 0;
+	return 4;
 }

@@ -12,6 +12,7 @@ struct enemy: gameObject{
     int orHealth;
     int health;
     bool hurted;
+    bool isBoss;
     int attackSpeed;
     int attackTimer;
 	SDL_RendererFlip direction;

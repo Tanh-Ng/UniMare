@@ -1,8 +1,10 @@
 #include "Include/Enemy.h"
 enemy::enemy()
 {
+	type==-1;
     size = PLAYER_SIZE;
-	hurted=false;	
+	hurted=false;
+	isBoss=false;	
 }
 void enemy::initEnemy(int difficulty)
 {
@@ -12,24 +14,27 @@ void enemy::initEnemy(int difficulty)
 	setPosition(randomX, randomY);
 	setRenderPosition(px, py);
 	type = GetRandomInt(0,difficulty,1);
+	if(isBoss)	type=2;
+	if(type>3)
+		type=type%4;
 	attackTimer=0;
 	if(type==0){
-		damage = 2 + difficulty;
+		damage = 2 + difficulty/2;
 		speed = GetRandomFloat(1,3,0.05);
 		orHealth= 50 + difficulty*20;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==1){
-		damage = 4 + difficulty;
+		damage = 4 + difficulty/2;
 		speed = GetRandomFloat(3,4,0.05);
 		orHealth = 50 + difficulty*20;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==2){
-		damage = 4 + difficulty;
-		speed = GetRandomFloat(3,4,0.05);
-		orHealth = 30 + difficulty*20;
-		attackSpeed= 30 - difficulty*3;
+		damage = 4 + difficulty/2;
+		speed = GetRandomFloat(3,5,0.05);
+		orHealth = 30 + difficulty*30;
+		attackSpeed= 30;
 	}
 	else {
 		damage = 20;

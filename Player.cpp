@@ -3,7 +3,7 @@ player::player()
 {
 	init(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2, PLAYER_SIZE, -1);
 	vx=0;vy=0;
-	currentWeapon=1;
+	currentWeapon=0;
 	speed=PLAYER_SPEED;
 	currentFrame = 0;
 	currentState = playerState::IDLE;
