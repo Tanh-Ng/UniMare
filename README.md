@@ -58,14 +58,14 @@ Một số chú ý: <br/>
 Đầu tiên xuất hiện phần menu chính của game, bạn có thể click chuột vào ô "Start" để bắt đầu game. Nếu không, lựa chọn quit và xác nhận để thoát. 
 <div style="text-align: center;">
 
-![image](IMGfile/preview/Menu.png)
+![image](IMGfile/Preview/Menu.png)
 
 </div>
 
 Khi bắt đầu game người chơi sẽ ngay lập tức nhận được vũ khí khởi đầu - Lightsaber
 <div style="text-align: center;">
 
-![image](IMGfile/preview/Starterweapon.png)
+![image](IMGfile/Preview/Starterweapon.png)
 
 </div>
 
@@ -94,7 +94,7 @@ Khi bắt đầu game người chơi sẽ ngay lập tức nhận được vu�
 
 <div style="text-align: center;">
 
-![image](IMGfile/preview/Layout.png)
+![image](IMGfile/Preview/Layout.png)
 </div>
 
  
@@ -125,10 +125,10 @@ Có 4 loại vũ khí, lần lượt theo thứ tự có thể nhặt đượ
 |                                         | Tên nightmare 	       | Khả
 năng                                                                                        |
 |-----------------------------------------|--------------------|--------------------------------------------------------------------------------------------------|
-| ![image](IMGfile/Preview/Type0.png) | Type 0	  | Máu cơ bản cao, sát thương thấp, tốc độ di chuyển chậm.                                                                            |
-| ![image](IMGfile/Preview/Type1.png)   | Type 1	       | Phiên bản nâng cấp của type 0 xuất hiện từ level 1.                                                  |
-| ![image](IMGfile/Preview/Type2.png)   | Type 2	   | Tốc độ di chuyển nhanh, có khả năng bay qua các vật cản, sát thương vừa phải, máu thấp, xuất hiện từ level 2, là trùm cuối của nhiệm vụ này.                                     |
-| ![image](IMGfile/Preview/Type3.png) | Type 3	 | Tốc độ di chuyển cực nhanh, máu vừa phải,gây sát thương và tự hủy khi chạm vào người chơi, xuất hiện từ level 3.                                                                   |
+| <img src="IMGfile/Preview/Type0.png" width=50> | Type 0	  | Máu cơ bản cao, sát thương thấp, tốc độ di chuyển chậm.                                                                            |
+| <img src="IMGfile/Preview/Type1.png" width=50>  | Type 1	       | Phiên bản nâng cấp của type 0 xuất hiện từ level 1.                                                  |
+| <img src="IMGfile/Preview/Type2.png" width=50>  | Type 2	   | Tốc độ di chuyển nhanh, có khả năng bay qua các vật cản, sát thương vừa phải, máu thấp, xuất hiện từ level 2, là trùm cuối của nhiệm vụ này.                                     |
+| <img src="IMGfile/Preview/Type3.png" width=50> | Type 3	 | Tốc độ di chuyển cực nhanh, máu vừa phải,gây sát thương và tự hủy khi chạm vào người chơi, xuất hiện từ level 3.                                                                   |
 # 4. Chiến thắng và thất bại
 
 - Bạn sẽ chiến thắng nếu đạt đến level 4 và tiêu diệt trùm cuối trong thời gian chỉ định .
