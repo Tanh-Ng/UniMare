@@ -45,7 +45,7 @@ void weapon::initWeapon(int temp){
 		cd=20;
 		ratio = 1;
 		damage= 15+2*level;
-		size = BASE_SIZE*1.5;
+		size = BASE_SIZE*1.8;
 		clipsize=1;
 	}
 	else{

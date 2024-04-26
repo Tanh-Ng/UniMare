@@ -1044,7 +1044,7 @@ void close(){
 	droppedWeapon.clear();
 	enemies.clear();
 	rocks.clear();
-	bullet.clear();
+	bullets.clear();
 		//Free fonts
 	TTF_CloseFont(boldFont);
 	boldFont = NULL;
