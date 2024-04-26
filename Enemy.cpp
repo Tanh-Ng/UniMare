@@ -21,25 +21,25 @@ void enemy::initEnemy(int difficulty)
 	if(type==0){
 		damage = 2 + difficulty/2;
 		speed = GetRandomFloat(1,3,0.05);
-		orHealth= 50 + difficulty*20;
+		orHealth= 50 + difficulty*15;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==1){
 		damage = 4 + difficulty/2;
 		speed = GetRandomFloat(3,4,0.05);
-		orHealth = 50 + difficulty*20;
+		orHealth = 50 + difficulty*15;
 		attackSpeed= 50 - difficulty*3;
 	}
 	else if(type==2){
 		damage = 4 + difficulty/2;
 		speed = GetRandomFloat(3,5,0.05);
-		orHealth = 30 + difficulty*30;
+		orHealth = 30 + difficulty*20;
 		attackSpeed= 30;
 	}
 	else {
 		damage = 20;
 		speed = GetRandomFloat(4,6,0.05);
-		orHealth = 100 + difficulty*20;
+		orHealth = 80 + difficulty*20;
 	}
 	health=orHealth;
 	currentFrame = 0;

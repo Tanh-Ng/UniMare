@@ -421,8 +421,13 @@ void initLevel(){
 	boss=0;
 	timer=1500;
 	score=0;
+	currentSlot=0;
 	SDL_WarpMouseInWindow(gWindow, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 	myPlayer.initPlayer();
+	myPlayer.currentWeapon=0;
+	Weapon.erase(Weapon.begin()+1);
+	weapon newwp;
+	Weapon.push_back(newwp);
 	Weapon[currentSlot].initWeapon(myPlayer.currentWeapon);
 	createGameObjectRandom(rock, rocks, MAX_ROCKS_NUM, MIN_ROCK_SIZE, MAX_ROCK_SIZE, ROCKS_CLIP);
 	allowSpawning = true;
@@ -1128,7 +1133,8 @@ void handleGameEvent(){
 				myAudio.playCollectObject();
 				pickup=true;
 			}
-			if(event.key.keysym.sym == SDLK_r){
+			if(event.key.keysym.sym == SDLK_r&&Weapon[currentSlot].type>0){
+				myAudio.playReload();
 				myPlayer.reload=true;
 				Weapon[currentSlot].reloadTimer=RELOAD_TIME;
 			}

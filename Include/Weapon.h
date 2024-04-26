@@ -8,7 +8,7 @@ struct weapon : gameObject{
     weapon();
     int cd;
     float damage;
-    double ratio = 1;
+    double ratio;
     int clipsize;
     int reloadTimer;
     int Ammo;
@@ -20,7 +20,7 @@ struct weapon : gameObject{
 	int currentFrame;
     LTexture* Texture;
     SDL_Rect* currentClip;
-    int level=2;
+    int level=0;
     void initWeapon(int temp);
     void dropWeapon(float x,float y,int difficulty);
     void setAnimation(LTexture& targetTexture,SDL_Rect& targetClip);
