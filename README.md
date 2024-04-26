@@ -1,14 +1,12 @@
 # UNI MARE BY NGUYEN THE ANH
 
-
+- Game walkthrough: https://youtu.be/9hTzD6XTmV4?feature=shared
 
 # Giới thiệu game
 
 UNI MARE là tựa game bắn súng top-down. Lấy bối cảnh cuộc chiến giữa con người và những quái vật nightmare ngoài vũ trụ có mục tiêu thôn tính mặt trăng. Bạn được phân công bảo vệ 1 khu vực của mặt trăng trước ý định lăm le của bọn quái vật night mare. Hãy cố gắng hết sức sống sót và tiêu diệt trùm cuối để hoàn thành nhiệm vụ.  
 
 - [0. Cách tải game](#0-cách-tải-game)
-    * [a. Cách 1: Không bao gồm code.](#a-cách-1-không-bao-gồm-code)
-    * [b. Cách 2: Bao gồm code và có thể biên dịch.](#b-cách-2-bao-gồm-code-và-có-thể-biên-dịch)
 - [1. Bắt đầu game](#1bắt-đầu-game)
 - [2. Các thành phần trong game:](#2-các-thành-phần-trong-game)
     * [a. Các vật cản và đồ rơi.](#a-các-vật-cản-và-đồ-rơi)
@@ -17,21 +15,13 @@ UNI MARE là tựa game bắn súng top-down. Lấy bối cảnh cuộc c
     * [a. Các loại vũ khí](#a-các-loại-vũ-khí)
     * [b. Các loại nightmare](#bcác-loại-nightmare)
 - [4. Chiến thắng và thất bại](#4-chiến-thắng-và-thất-bại)
-- [Về đồ họa của game:](#về-đồ-họa-của-game)
+- [Về cấu trúc của game:](#về-cấu-trúc-của-game)
 - [Về source code game](#về-source-code-game)
+- [Nguồn và cảm hứng](#nguồn-và-cảm-hứng)
 
 # 0. Cách tải game
-
-## a. Cách 1: Không bao gồm code.
-
-
-
-## b. Cách 2: Bao gồm code và có thể biên dịch.
-
-**Bước 1:** Clone repo này về (Khoảng 800 MB - do có cả lịch sử các phiên bản). <br/>
-Hoặc Chọn Code -> Download Zip (Khoảng 90MB)
-
-
+**Bước 1:** Clone repo. <br/>
+Hoặc Chọn Code -> Download Zip 
 - Tất cả code đều nằm trong thư mục src.<br/>
 - Có thể nhảy đến bước 5 để chơi luôn.
 
@@ -41,7 +31,7 @@ Một số chú ý: <br/>
 
 - Nếu sử dụng trình biên dịch khác thì phải dịch lại icon: vào thư mục icon rồi dùng
   lệnh `windres main.rc -O coff main.res` trong cmd.<br/>
-- Phải xóa ba dll của c++ trong thư mục chứa pvz.exe: `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll`. Ba
+- Phải di chuyển dll của c++ trong thư mục Important ra ngoài thư mục chứa Unimare.exe: `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll`. Ba
   dll này chỉ dành cho người chơi không cài sẵn c++ trong máy.
 
 **Bước 3:** Cài GNU make
@@ -101,6 +91,7 @@ Click chuột phải để thực hiện tấn công vào vị trí chỉ
 Có thể nhặt được những vũ khí đã rơi từ nightmare bằng cách nhấn phím F<br/>
 Có thể thay đổi vũ khí thành vũ khí khác sau khi đã nhặt đủ 2 vũ khí bằng cách lăn chuột<br/>
 Khi muốn dừng game lại nhấn phím ESC và lựa chọn hành động bạn mong muốn: Resume, Retry, Quit bằng cách click chuột vào<br/>
+Càng tiêu diệt nhiều quái bạn sẽ càng đến cấp độ cao hơn, cấp độ càng cao tỉ lệ rơi vũ khí mạnh càng cao, nhưng độ khó cũng tăng lên <br/>
 Giữ khoảng cách với bọn nightmare và sống sót.<br/>
 
 ## a. Các loại vũ khí.
@@ -131,56 +122,42 @@ Có 4 loại vũ khí, lần lượt theo thứ tự có thể nhặt đượ
 
 <div style="text-align: center;">
 
+![image](IMGfile/Preview/win.png)
+
+</div>
+
 - Bạn sẽ thất bại nếu hết máu hoặc không tiêu diệt được trùm cuối trong thời gian chỉ định.
 
 <div style="text-align: center;">
+
+![image](IMGfile/Preview/lose.png)
 
 </div>
 
 ---
 
-### Về đồ họa của game:
-
-[[Cách làm hiệu ứng từng cây, zombie trong game]](about_graphics.md)
+### Về cấu trúc của game:
+-   Các vật thể trong game được render bằng cách sử dụng SDL_Texture, hoạt ảnh thay đổi bằng cách thay đổi vị trí render  trên spritesheet, vị trí của các vật thể đều được tính dựa trên SDL_Rect Camera. Camera được render dựa vào trung tâm của của người chơi
+-   Với những đa vật thể như đạn, kẻ thù, đá, súng rơi, chúng được lưu trữ bên trong các vector kiểu cấu trúc GameObject hoặc kiểu cấu trúc kế thừa của GameObject như Weapon, Enemy.
+-   Với những vật thể như người chơi , vũ khí, kẻ thù trạng thái của chúng được đặt bằng kiểu trạng thái(States).
+-   Âm thanh của game được xử lý bởi một class audio, với mỗi lần gọi một hàm riêng biệt sẽ set chức năng thành play/pause của âm thanh mà hàm gọi đến
 
 ### Về source code game:
 
-- Folder draw:
-    * khởi tạo window và renderer
-    * chứa tất cả các ảnh trong game (được đánh số)
-    * chứa hầu hết các câu lệnh của SDL2, SDL2_image, SDL2_ttf, sử dụng để vẽ load ảnh, chữ và vẽ lên renderer, window.
-- Folder elements: Chứa tất cả các thành phần của game:
-    * bullets: các loại đạn
-    * button: các loại nút trong game (có thể nhấn được hoặc không)
-    * Map: chứa hàm random và khởi tạo bảng 5 x 9 cho màn chơi.
-    * mower: máy cắt cỏ (Cán zombie)
-    * plants: chứa tất cả các loại plant (được kế thừa từ class Plants)
-    * zombies: chứa tất cả các loại zombies (được kế thừa từ class Zombie)
-    * elements: gom lại các loại plants và zombies.
-    * elements_actions:
-        + chứa hầu hết các tương tác giữa các thành phần game với nhau, và với màn chơi.
-        + tạo ngẫu nhiên zombie
-        + cập nhật tất cả các thay đổi của game theo từng khung hình
-- Folder events: Xử lý các sự kiện trong game (sự kiện chuột, bàn phím)
-    * in_game: xử lý các sự kiện khi đang trong một màn chơi
-        + credit: phần giới thiệu các loại zombie & ready-set-plant
-        + game: tất cả các sự kiện trong một màn chơi
-        + lose: xử lý khi thua
-        + main_menu: xử lý khi người chơi muốn trở lại phần chọn màn chơi
-        + pause_menu: xử lý khi người chơi dừng game (nút dừng hoặc click ra ngoài game)
-        + restart_menu: xử lý khi người chơi muốn chơi lại màn chơi
-        + turbo: xử lý nút tăng tốc game
-        + volume: xử lý nút điều chỉnh âm lượng nhạc nền và hiệu ứng.
-        + win: xử lý khi chiến thắng trò chơi.
-    * mouse_cursor: xử lý con trỏ chuột
-    * out_game: xử lý các sự kiện ngoài màn chơi
-        + choose_level: xử lý chọn màn chơi
-        + quit_menu: xử lý nút quit game: tắt game
-        + reset_level: xử lý nút reset level: xóa tiến trình chơi
-        + start_game: xử lý nút "Click to start" để bắt đầu vào game.
-        + unlock_plant: xử lý mở khóa plant mới.
-- Folder level: xử lý phần lấy dữ liệu ván chơi.
-- Folder music: xử lý phần âm thanh của game - SDL2_mixer
-- Folder player: xử lý phần dữ liệu người chơi. Bao gồm việc lấy và thay đổi tên, tiến trình.
-- game_stats.hpp: chứa tất cả thông số game
-- game.hpp và game.cpp: hàm main() của trò chơi.
+- Global.h & Global.cpp:
+    * chứa những biến toàn cục trong game
+    * chứa các hàm tính khoảng cách random số nguyên, số thực.
+    * StateStruct máy trạng thái, sử dụng con trỏ để chuyển đổi giữa các trạng thái như Game,Menu,Pause,EnGame bằng cách trỏ đến các hàm này.
+- Graphics.h & Graphics.cpp: Liên quan đến việc xử lý texture và render:
+- GameObject.h & GameObject.cpp: Tạo cấu trúc cơ bản của vật thể và các hàm liên quan.
+    * Player.h & Player.cpp: cấu trúc cơ bản của nhân vật.
+    * Enemy.h & Enemy.cpp: cấu trúc cơ bản của kẻ thù.
+    * Weapon.h & Weapon.cpp: Cấu trúc cơ bản của vũ khí và đạn súng.
+- Button.h & Button.cpp: Cấu trúc của các nút bấm trong game và xử lý input từ chuột.
+- Audio.h & Audio.cpp: Cấu trúc âm thanh cơ bản của game.
+- Main.cpp: Chứa hàm main() của game và các hàm xung quanh xử lý game.
+
+#### Nguồn và cảm hứng.
+-https://rgsdev.itch.io/ (sử dụng hình ảnh nhân vật, vũ khí và hình nền)
+-https://pixabay.com/vi/sound-effects/ (sử dụng âm thanh) 
+-https://fonts.google.com/specimen/Open+Sans (sử dụng phông chữ)
